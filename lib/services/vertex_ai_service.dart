@@ -6,6 +6,18 @@ import '../models/waste_classification.dart';
 import '../config/api_config.dart';
 
 class VertexAIService {
+  // Restricted waste classes
+  static const List<String> _allowedWasteTypes = [
+    'plastic',
+    'paper', 
+    'metal',
+    'trash',
+    'biological',
+    'glass',
+    'battery',
+    'e-waste'
+  ];
+
   // Language mapping for Sarvam API
   static const Map<String, String> _languageCodeMap = {
     'hi': 'hi-IN',
@@ -18,54 +30,69 @@ class VertexAIService {
     'kn': 'kn-IN',
   };
 
-  // Prompts in user's native language for better classification
+  // Updated classification prompts with restricted categories
   static const Map<String, String> _classificationPrompts = {
-    'hi': '''इस कचरे की तस्वीर का विश्लेषण करें और वर्गीकरण करें:
+    'hi': '''इस कचरे की तस्वीर का विश्लेषण करें और केवल इन श्रेणियों में से एक में वर्गीकृत करें:
 
-1. कचरे का प्रकार (प्लास्टिक, कांच, धातु, कागज, जैविक, इलेक्ट्रॉनिक, कपड़ा आदि)
-2. विशिष्ट वस्तु का नाम (जैसे "प्लास्टिक की पानी की बोतल", "कांच का जार")
+ALLOWED CATEGORIES ONLY: plastic, paper, metal, trash, biological, glass, battery, e-waste
+
+1. कचरे का प्रकार (केवल ऊपर दी गई 8 श्रेणियों में से एक चुनें)
+2. विशिष्ट वस्तु का नाम (जैसे "प्लास्टिक की पानी की बोतल")
 3. पुनर्चक्रण स्थिति (पुनर्चक्रण योग्य/गैर-पुनर्चक्रण योग्य/कंपोस्ट योग्य)
 4. भारतीय रुपये में अनुमानित मूल्य (0-100 की रेंज में)
 5. निपटान निर्देश (1-2 वाक्यों में)
 
-JSON प्रारूप में उत्तर दें: wasteType, itemName, recyclability, monetaryValue, disposalInstructions''',
-    
-    'ta': '''இந்த கழிவுப் படத்தை பகுப்பாய்வு செய்து வகைப்படுத்தவும்:
+JSON प्रारूप में उत्तर दें: wasteType, itemName, recyclability, monetaryValue, disposalInstructions
 
-1. கழிவு வகை (பிளாஸ்டிக், கண்ணாடி, உலோகம், காகிதம், இயற்கை, மின்னணு, துணி போன்றவை)
+महत्वपूर्ण: wasteType में केवल ये शब्द उपयोग करें: plastic, paper, metal, trash, biological, glass, battery, e-waste''',
+    
+    'ta': '''இந்த கழிவுப் படத்தை பகுப்பாய்வு செய்து கீழ்கண்ட வகைகளில் மட்டும் வகைப்படுத்தவும்:
+
+ALLOWED CATEGORIES ONLY: plastic, paper, metal, trash, biological, glass, battery, e-waste
+
+1. கழிவு வகை (மேலே உள்ள 8 வகைகளில் ஒன்றை மட்டும் தேர்ந்தெடுக்கவும்)
 2. குறிப்பிட்ட பொருளின் பெயர்
 3. மறுசுழற்சி நிலை
-4. இந்திய ரூபாயில் மதிப்பீட்டு மூல்য (0-100 வரம்பில்)
+4. இந்திய ரூபாயில் மதிப்பீட்டு மூல்य (0-100 வரம்பில்)
 5. அகற்றல் வழிமுறைகள் (1-2 வாக்கியங்களில்)
 
-JSON வடிவத்தில் பதிலளிக்கவும்: wasteType, itemName, recyclability, monetaryValue, disposalInstructions''',
-    
-    'te': '''ఈ వ్యర్థ చిత్రాన్ని విశ్లేషించి వర్గీకరించండి:
+JSON வடிவத்தில் பதிலளிக்கவும்: wasteType, itemName, recyclability, monetaryValue, disposalInstructions
 
-1. వ్యర్థ రకం (ప్లాస్టిక్, గ్లాస్, లోహం, కాగితం, సేంద్రీయ, ఎలక్ట్రానిక్, వస్త్రం మొదలైనవి)
+முக்கியமானது: wasteType இல் இந்த வார்த்தைகளை மட்டும் பயன்படுத்தவும்: plastic, paper, metal, trash, biological, glass, battery, e-waste''',
+    
+    'te': '''ఈ వ్యర్థ చిత్రాన్ని విశ్లేషించి కింది వర్గాలలో మాత్రమే వర్గీకరించండి:
+
+ALLOWED CATEGORIES ONLY: plastic, paper, metal, trash, biological, glass, battery, e-waste
+
+1. వ్యర్థ రకం (పైన ఉన్న 8 వర్గాలలో ఒకదాన్ని మాత్రమే ఎంచుకోండి)
 2. నిర్దిష్ట వస్తువు పేరు
 3. రీసైక్లింగ్ స్థితి
 4. భారతీయ రూపాయలలో అంచనా విలువ (0-100 పరిధిలో)
 5. పారవేయడం సూచనలు (1-2 వాక్యాలలో)
 
-JSON ఆకృతిలో సమాధానం ఇవండి: wasteType, itemName, recyclability, monetaryValue, disposalInstructions''',
-    
-    'en': '''Analyze this waste image and provide detailed classification:
+JSON ఆకృతిలో సమాధానం ఇవండి: wasteType, itemName, recyclability, monetaryValue, disposalInstructions
 
-1. Waste type (plastic, glass, metal, paper, organic, e-waste, textile, etc.)
-2. Specific item name (e.g., "Plastic Water Bottle", "Glass Jar", "Aluminum Can")
+ముఖ్యమైనది: wasteType లో ఈ పదాలను మాత్రమే ఉపయోగించండి: plastic, paper, metal, trash, biological, glass, battery, e-waste''',
+    
+    'en': '''Analyze this waste image and classify it into ONE of these categories ONLY:
+
+ALLOWED CATEGORIES ONLY: plastic, paper, metal, trash, biological, glass, battery, e-waste
+
+1. Waste type (choose only from the 8 categories above)
+2. Specific item name (e.g., "Plastic Water Bottle")
 3. Recyclability status (recyclable/non-recyclable/compostable)
 4. Estimated monetary value in INR (0-100 range)
 5. Disposal instructions in 1-2 sentences
 
-Format your response as JSON with keys: wasteType, itemName, recyclability, monetaryValue, disposalInstructions''',
+Format your response as JSON with keys: wasteType, itemName, recyclability, monetaryValue, disposalInstructions
+
+IMPORTANT: Use only these exact words for wasteType: plastic, paper, metal, trash, biological, glass, battery, e-waste''',
   };
 
   Future<WasteClassification?> classifyWaste(File imageFile) async {
     try {
-      // Validate API keys before making requests
       if (!VertexAIConfig.validateApiKeys()) {
-        throw Exception('API keys not configured. Please check .env file.');
+        throw Exception('API keys not configured. Please check secrets.xml file.');
       }
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -74,19 +101,16 @@ Format your response as JSON with keys: wasteType, itemName, recyclability, mone
 
       String base64Image = base64Encode(await imageFile.readAsBytes());
       
-      // Use classification prompt in user's selected language
       String prompt = _classificationPrompts[selectedLanguage] ?? _classificationPrompts['en']!;
       
-      // Call Vertex AI (Gemini 2.0 Flash) for classification
+      // Call Vertex AI
       final vertexResponse = await http.post(
         Uri.parse(VertexAIConfig.modelEndpoint),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'contents': [{
             'parts': [
-              {
-                'text': prompt
-              },
+              {'text': prompt},
               {
                 'inlineData': {
                   'mimeType': 'image/jpeg',
@@ -124,33 +148,42 @@ Format your response as JSON with keys: wasteType, itemName, recyclability, mone
           final jsonStr = jsonMatch.group(0)!;
           final classificationJson = json.decode(jsonStr);
           classification = WasteClassification.fromJson(classificationJson);
+          
+          // Validate waste type against allowed categories
+          if (!_allowedWasteTypes.contains(classification.wasteType.toLowerCase())) {
+            print('Invalid waste type: ${classification.wasteType}, defaulting to trash');
+            classification = WasteClassification(
+              wasteType: "trash",
+              itemName: classification.itemName,
+              recyclability: classification.recyclability,
+              monetaryValue: classification.monetaryValue,
+              disposalInstructions: classification.disposalInstructions,
+            );
+          }
         } else {
           throw Exception('No JSON found in Vertex AI response');
         }
       } catch (e) {
         print('JSON parsing error: $e');
         classification = WasteClassification(
-          wasteType: "Mixed Waste",
-          itemName: responseText.length > 50 ? responseText.substring(0, 50) : responseText,
+          wasteType: "trash",
+          itemName: "Mixed Waste Item",
           recyclability: "check local guidelines",
           monetaryValue: 5,
           disposalInstructions: "Sort items properly before disposal according to local guidelines.",
         );
       }
 
-      // If response is already in target language, use it directly
-      // Otherwise, translate using fallback system
+      // Translate results
       String? translatedName = classification.itemName;
       String? translatedInstructions = classification.disposalInstructions;
 
       if (selectedLanguage != 'en') {
-        // Try to use Sarvam AI for translation first
         try {
           translatedName = await _translateText(classification.itemName, selectedLanguage);
           translatedInstructions = await _translateText(classification.disposalInstructions, selectedLanguage);
         } catch (e) {
-          print('Sarvam translation failed, using fallback: $e');
-          // Use fallback translations
+          print('Translation failed, using fallback: $e');
           translatedName = _getFallbackTranslation(classification.itemName, selectedLanguage);
           translatedInstructions = _getFallbackTranslation(classification.disposalInstructions, selectedLanguage);
         }
@@ -179,7 +212,7 @@ Format your response as JSON with keys: wasteType, itemName, recyclability, mone
       final translationResponse = await http.post(
         Uri.parse('https://api.sarvam.ai/translate'),
         headers: {
-          'api-subscription-key': VertexAIConfig.sarvamAIKey, // Using config
+          'api-subscription-key': VertexAIConfig.sarvamAIKey,
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
@@ -194,10 +227,7 @@ Format your response as JSON with keys: wasteType, itemName, recyclability, mone
 
       if (translationResponse.statusCode == 200) {
         final translationData = json.decode(translationResponse.body);
-        print('Translation successful: ${translationData['translated_text']}');
         return translationData['translated_text'];
-      } else {
-        print('Translation failed: ${translationResponse.statusCode} - ${translationResponse.body}');
       }
       return null;
     } catch (e) {
@@ -206,7 +236,6 @@ Format your response as JSON with keys: wasteType, itemName, recyclability, mone
     }
   }
 
-  // Fallback translation system
   String? _getFallbackTranslation(String text, String language) {
     final Map<String, Map<String, String>> fallbackTranslations = {
       'hi': {
@@ -214,72 +243,74 @@ Format your response as JSON with keys: wasteType, itemName, recyclability, mone
         'Glass Jar': 'कांच का जार',
         'Aluminum Can': 'एल्युमिनियम कैन',
         'Paper': 'कागज़',
-        'Cardboard': 'गत्ता',
         'Metal': 'धातु',
         'Glass': 'कांच',
         'Plastic': 'प्लास्टिक',
-        'Organic': 'जैविक',
+        'Battery': 'बैटरी',
         'E-waste': 'इलेक्ट्रॉनिक कचरा',
-        'Textile': 'कपड़ा',
-        'Empty and rinse the bottle. Dispose of it in a designated recycling bin.': 'बोतल को खाली करके धो लें। इसे निर्दिष्ट रीसाइक्लिंग बिन में डालें।',
+        'Biological': 'जैविक',
+        'Trash': 'कचरा',
       },
       'ta': {
         'Plastic Water Bottle': 'பிளாஸ்டிக் தண்ணீர் பாட்டில்',
         'Glass Jar': 'கண்ணாடி ஜார்',
         'Aluminum Can': 'அலுமினியம் கேன்',
         'Paper': 'காகிதம்',
-        'Cardboard': 'அட்டை',
+        'Metal': 'உலோகம்',
+        'Glass': 'கண்ணாடி',
+        'Plastic': 'பிளாஸ்டிக்',
+        'Battery': 'பேட்டரி',
+        'E-waste': 'மின்னணு கழிவு',
+        'Biological': 'இயற்கை',
+        'Trash': 'குப்பை',
       },
       'te': {
         'Plastic Water Bottle': 'ప్లాస్టిక్ వాటర్ బాటిల్',
         'Glass Jar': 'గ్లాస్ జార్',
         'Aluminum Can': 'అల్యూమినియం క్యాన్',
         'Paper': 'కాగితం',
-        'Cardboard': 'కార్డ్‌బోర్డ్',
+        'Metal': 'లోహం',
+        'Glass': 'గాజు',
+        'Plastic': 'ప్లాస్టిక్',
+        'Battery': 'బ్యాటరీ',
+        'E-waste': 'ఎలక్ట్రానిక్ వ్యర్థాలు',
+        'Biological': 'సేంద్రీయ',
+        'Trash': 'చెత్త',
       },
     };
 
-    if (fallbackTranslations.containsKey(language)) {
-      return fallbackTranslations[language]![text];
-    }
-    return null;
+    return fallbackTranslations[language]?[text];
   }
 
   Future<String?> getTextToSpeechBase64(String text, String language) async {
     try {
       final languageCode = _languageCodeMap[language] ?? 'hi-IN';
-      print('Getting TTS for text: "$text" in language: $languageCode');
-
+      
       final ttsResponse = await http.post(
         Uri.parse('https://api.sarvam.ai/text-to-speech'),
         headers: {
-          'api-subscription-key': VertexAIConfig.sarvamAIKey,  // Using config
+          'api-subscription-key': VertexAIConfig.sarvamAIKey,
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
         body: json.encode({
           'text': text,
           'target_language_code': languageCode,
-          'speaker': 'manisha',  // Use valid speaker name
-          'model': 'bulbul:v2',  // Use v2 model
-          'output_audio_codec': 'wav'  // Specify audio format
+          'speaker': 'manisha',
+          'model': 'bulbul:v2',
+          'output_audio_codec': 'wav'
         }),
       );
-
-      print('TTS Response Status: ${ttsResponse.statusCode}');
-      print('TTS Response Body: ${ttsResponse.body}');
 
       if (ttsResponse.statusCode == 200) {
         final ttsData = json.decode(ttsResponse.body);
         if (ttsData['audios'] != null && ttsData['audios'].isNotEmpty) {
-          return ttsData['audios'][0];  // Returns base64 encoded audio
+          return ttsData['audios'][0];
         }
-      } else {
-        print('TTS API Error: ${ttsResponse.statusCode} - ${ttsResponse.body}');
       }
       return null;
     } catch (e) {
-      print('Sarvam AI TTS error: $e');
+      print('TTS error: $e');
       return null;
     }
   }

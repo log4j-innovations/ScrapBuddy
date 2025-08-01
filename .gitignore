@@ -59,7 +59,6 @@ ios/.generated/
 ios/Flutter/App.framework
 ios/Flutter/Flutter.framework
 ios/Flutter/Flutter.podspec
-ios/Flutter/Generated.xcconfig
 ios/Runner/GeneratedPluginRegistrant.*
 
 # Web related
@@ -80,14 +79,8 @@ lib/generated_plugin_registrant.dart
 !**/android/**/gradle-wrapper.jar
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 
-# Environment Variables (CRITICAL - NEVER COMMIT)
-.env
-.env.local
-.env.production
-.env.staging
-.env.development
-
-# API Keys and Sensitive Data
+# API Keys and Sensitive Data (CRITICAL - NEVER COMMIT)
+**/android/app/src/main/res/values/secrets.xml
 **/config/secrets.dart
 **/config/api_keys.dart
 secrets.json

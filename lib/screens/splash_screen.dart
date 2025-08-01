@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../localization/app_localizations.dart';
 import 'language_selection_screen.dart';
 import 'home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
+  final Function(Locale)? onLocaleChanged;
+  
+  const SplashScreen({super.key, this.onLocaleChanged});
+
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
@@ -18,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: Duration(seconds: 2),
+      duration: const Duration(seconds: 2),
       vsync: this,
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
@@ -30,20 +34,45 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     _checkLanguagePreference();
   }
 
-  _checkLanguagePreference() async {
-    await Future.delayed(Duration(seconds: 3));
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? selectedLanguage = prefs.getString('selected_language');
+  Future<void> _checkLanguagePreference() async {
+    await Future.delayed(const Duration(seconds: 3));
     
-    if (selectedLanguage == null) {
+    if (!mounted) return;
+    
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? selectedLanguage = prefs.getString('selected_language');
+      
+      if (!mounted) return;
+      
+      if (selectedLanguage == null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => LanguageSelectionScreen(onLocaleChanged: widget.onLocaleChanged)
+          ),
+        );
+      } else {
+        // Set locale before navigating to home
+        if (widget.onLocaleChanged != null) {
+          widget.onLocaleChanged!(Locale(selectedLanguage));
+        }
+        
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      }
+    } catch (e) {
+      print('Error checking language preference: $e');
+      if (!mounted) return;
+      
+      // Navigate to language selection on error
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LanguageSelectionScreen()),
-      );
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(
+          builder: (context) => LanguageSelectionScreen(onLocaleChanged: widget.onLocaleChanged)
+        ),
       );
     }
   }
@@ -57,7 +86,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF2E7D32),
+      backgroundColor: const Color(0xFF2E7D32),
       body: Center(
         child: AnimatedBuilder(
           animation: _animationController,
@@ -66,33 +95,18 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               opacity: _fadeAnimation,
               child: ScaleTransition(
                 scale: _scaleAnimation,
-                child: Column(
+                child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 20,
-                            offset: Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.recycling,
-                        size: 60,
-                        color: Color(0xFF2E7D32),
-                      ),
+                    Icon(
+                      Icons.recycling,
+                      size: 120,
+                      color: Colors.white,
                     ),
                     SizedBox(height: 30),
                     Text(
                       'ScrapBuddy',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -101,9 +115,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     SizedBox(height: 10),
                     Text(
                       'AI-Powered Waste Classification',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 16,
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white70,
                       ),
                     ),
                     SizedBox(height: 50),

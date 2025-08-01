@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../localization/localization_helper.dart';
 import 'home_screen.dart';
 
 class LanguageSelectionScreen extends StatefulWidget {
+  final Function(Locale)? onLocaleChanged;
+  
+  const LanguageSelectionScreen({super.key, this.onLocaleChanged});
+
   @override
-  _LanguageSelectionScreenState createState() => _LanguageSelectionScreenState();
+  State<LanguageSelectionScreen> createState() => _LanguageSelectionScreenState();
 }
 
 class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
@@ -25,38 +29,40 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF8F9FA),
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         title: Text(
-          'Select Language',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+          LocalizationHelper.getString(context, 'select_language', fallback: 'Select Language'),
+          style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: Padding(
-        padding: EdgeInsets.all(24),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Choose your preferred language',
-              style: GoogleFonts.inter(
+              LocalizationHelper.getString(context, 'choose_preferred_language', 
+                  fallback: 'Choose your preferred language'),
+              style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text(
-              'This will be used for waste classification results and voice feedback',
-              style: GoogleFonts.inter(
+              LocalizationHelper.getString(context, 'language_description', 
+                  fallback: 'This will be used for waste classification results and voice feedback'),
+              style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey.shade600,
                 height: 1.5,
               ),
             ),
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
             Expanded(
               child: ListView.builder(
                 itemCount: languages.length,
@@ -65,29 +71,29 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                   final isSelected = selectedLanguage == language['code'];
                   
                   return Container(
-                    margin: EdgeInsets.only(bottom: 12),
+                    margin: const EdgeInsets.only(bottom: 12),
                     decoration: BoxDecoration(
-                      color: isSelected ? Color(0xFF2E7D32).withOpacity(0.1) : Colors.white,
+                      color: isSelected ? const Color(0xFF2E7D32).withValues(alpha: 0.1) : Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isSelected ? Color(0xFF2E7D32) : Colors.grey.shade200,
+                        color: isSelected ? const Color(0xFF2E7D32) : Colors.grey.shade200,
                         width: isSelected ? 2 : 1,
                       ),
                       boxShadow: isSelected ? [
                         BoxShadow(
-                          color: Color(0xFF2E7D32).withOpacity(0.2),
+                          color: const Color(0xFF2E7D32).withValues(alpha: 0.2),
                           blurRadius: 8,
-                          offset: Offset(0, 2),
+                          offset: const Offset(0, 2),
                         ),
                       ] : [],
                     ),
                     child: RadioListTile<String>(
                       title: Text(
                         '${language['name']} (${language['native']})',
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                          color: isSelected ? Color(0xFF2E7D32) : Colors.black87,
+                          color: isSelected ? const Color(0xFF2E7D32) : Colors.black87,
                         ),
                       ),
                       value: language['code']!,
@@ -97,21 +103,21 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                           selectedLanguage = value;
                         });
                       },
-                      activeColor: Color(0xFF2E7D32),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      activeColor: const Color(0xFF2E7D32),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                     ),
                   );
                 },
               ),
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
                 onPressed: selectedLanguage != null ? _saveLanguageAndContinue : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF2E7D32),
+                  backgroundColor: const Color(0xFF2E7D32),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -120,8 +126,8 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                   disabledBackgroundColor: Colors.grey.shade300,
                 ),
                 child: Text(
-                  'Continue',
-                  style: GoogleFonts.inter(
+                  LocalizationHelper.getString(context, 'continue', fallback: 'Continue'),
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                   ),
@@ -134,13 +140,34 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
     );
   }
 
-  _saveLanguageAndContinue() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('selected_language', selectedLanguage!);
+  Future<void> _saveLanguageAndContinue() async {
+    if (!mounted) return; // Check if widget is still mounted
     
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => HomeScreen()),
-    );
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('selected_language', selectedLanguage!);
+      
+      // Update app locale
+      if (widget.onLocaleChanged != null) {
+        widget.onLocaleChanged!(Locale(selectedLanguage!));
+      }
+      
+      if (!mounted) return; // Check again before navigation
+      
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    } catch (e) {
+      print('Error saving language preference: $e');
+      if (!mounted) return;
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error saving language preference: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }
