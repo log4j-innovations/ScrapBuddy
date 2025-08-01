@@ -30,7 +30,7 @@ class VertexAIService {
     'kn': 'kn-IN',
   };
 
-  // Updated classification prompts with restricted categories
+  // Updated classification prompts with enhanced disposal instructions
   static const Map<String, String> _classificationPrompts = {
     'hi': '''इस कचरे की तस्वीर का विश्लेषण करें और केवल इन श्रेणियों में से एक में वर्गीकृत करें:
 
@@ -40,11 +40,13 @@ ALLOWED CATEGORIES ONLY: plastic, paper, metal, trash, biological, glass, batter
 2. विशिष्ट वस्तु का नाम (जैसे "प्लास्टिक की पानी की बोतल")
 3. पुनर्चक्रण स्थिति (पुनर्चक्रण योग्य/गैर-पुनर्चक्रण योग्य/कंपोस्ट योग्य)
 4. भारतीय रुपये में अनुमानित मूल्य (0-100 की रेंज में)
-5. निपटान निर्देश (1-2 वाक्यों में)
+5. निपटान निर्देश (2-3 वाक्यों में, पहले सफाई/तैयारी के बारे में, फिर निपटान के बारे में, और अंत में सुरक्षा सुझाव)
 
 JSON प्रारूप में उत्तर दें: wasteType, itemName, recyclability, monetaryValue, disposalInstructions
 
-महत्वपूर्ण: wasteType में केवल ये शब्द उपयोग करें: plastic, paper, metal, trash, biological, glass, battery, e-waste''',
+महत्वपूर्ण: 
+- wasteType में केवल ये शब्द उपयोग करें: plastic, paper, metal, trash, biological, glass, battery, e-waste
+- disposalInstructions में कम से कम 2-3 विस्तृत वाक्य हों''',
     
     'ta': '''இந்த கழிவுப் படத்தை பகுப்பாய்வு செய்து கீழ்கண்ட வகைகளில் மட்டும் வகைப்படுத்தவும்:
 
@@ -54,11 +56,13 @@ ALLOWED CATEGORIES ONLY: plastic, paper, metal, trash, biological, glass, batter
 2. குறிப்பிட்ட பொருளின் பெயர்
 3. மறுசுழற்சி நிலை
 4. இந்திய ரூபாயில் மதிப்பீட்டு மூல்य (0-100 வரம்பில்)
-5. அகற்றல் வழிமுறைகள் (1-2 வாக்கியங்களில்)
+5. அகற்றும் வழிமுறைகள் (2-3 வாக்கியங்களில், முதலில் சுத்தம்/தயாரிப்பு பற்றி, பின்னர் அகற்றல் பற்றி, மற்றும் இறுதியில் பாதுகாப்பு ஆலோசனை)
 
 JSON வடிவத்தில் பதிலளிக்கவும்: wasteType, itemName, recyclability, monetaryValue, disposalInstructions
 
-முக்கியமானது: wasteType இல் இந்த வார்த்தைகளை மட்டும் பயன்படுத்தவும்: plastic, paper, metal, trash, biological, glass, battery, e-waste''',
+முக்கியமானது: 
+- wasteType இல் இந்த வார்த்தைகளை மட்டும் பயன்படுத்தவும்: plastic, paper, metal, trash, biological, glass, battery, e-waste
+- disposalInstructions இல் குறைந்தது 2-3 விரிவான வாக்கியங்கள் இருக்க வேண்டும்''',
     
     'te': '''ఈ వ్యర్థ చిత్రాన్ని విశ్లేషించి కింది వర్గాలలో మాత్రమే వర్గీకరించండి:
 
@@ -68,11 +72,13 @@ ALLOWED CATEGORIES ONLY: plastic, paper, metal, trash, biological, glass, batter
 2. నిర్దిష్ట వస్తువు పేరు
 3. రీసైక్లింగ్ స్థితి
 4. భారతీయ రూపాయలలో అంచనా విలువ (0-100 పరిధిలో)
-5. పారవేయడం సూచనలు (1-2 వాక్యాలలో)
+5. పారవేయడం సూచనలు (2-3 వాక్యాలలో, మొదట శుభ్రపరచడం/సిద్ధం చేయడం గురించి, తర్వాత పారవేయడం గురించి, చివరకు భద్రతా సలహా)
 
 JSON ఆకృతిలో సమాధానం ఇవండి: wasteType, itemName, recyclability, monetaryValue, disposalInstructions
 
-ముఖ్యమైనది: wasteType లో ఈ పదాలను మాత్రమే ఉపయోగించండి: plastic, paper, metal, trash, biological, glass, battery, e-waste''',
+ముఖ్యమైనది: 
+- wasteType లో ఈ పదాలను మాత్రమే ఉపయోగించండి: plastic, paper, metal, trash, biological, glass, battery, e-waste
+- disposalInstructions లో కనీసం 2-3 వివరణాత్మక వాక్యాలు ఉండాలి''',
     
     'en': '''Analyze this waste image and classify it into ONE of these categories ONLY:
 
@@ -82,11 +88,13 @@ ALLOWED CATEGORIES ONLY: plastic, paper, metal, trash, biological, glass, batter
 2. Specific item name (e.g., "Plastic Water Bottle")
 3. Recyclability status (recyclable/non-recyclable/compostable)
 4. Estimated monetary value in INR (0-100 range)
-5. Disposal instructions in 1-2 sentences
+5. Disposal instructions (2-3 sentences: first about cleaning/preparation, then about disposal method, and finally a safety/environmental tip)
 
 Format your response as JSON with keys: wasteType, itemName, recyclability, monetaryValue, disposalInstructions
 
-IMPORTANT: Use only these exact words for wasteType: plastic, paper, metal, trash, biological, glass, battery, e-waste''',
+IMPORTANT: 
+- Use only these exact words for wasteType: plastic, paper, metal, trash, biological, glass, battery, e-waste
+- Provide detailed disposal instructions with at least 2-3 comprehensive sentences''',
   };
 
   Future<WasteClassification?> classifyWaste(File imageFile) async {
@@ -120,10 +128,10 @@ IMPORTANT: Use only these exact words for wasteType: plastic, paper, metal, tras
             ]
           }],
           'generationConfig': {
-            'temperature': 0.1,
-            'topK': 32,
-            'topP': 1,
-            'maxOutputTokens': 2048,
+            'temperature': 0.3,
+            'topK': 40,
+            'topP': 0.95,
+            'maxOutputTokens': 3072, // Increased for longer instructions
           }
         }),
       );
@@ -170,7 +178,7 @@ IMPORTANT: Use only these exact words for wasteType: plastic, paper, metal, tras
           itemName: "Mixed Waste Item",
           recyclability: "check local guidelines",
           monetaryValue: 5,
-          disposalInstructions: "Sort items properly before disposal according to local guidelines.",
+          disposalInstructions: "First, separate different materials if possible. Then, dispose of items in the appropriate waste collection bins according to your local waste management guidelines. Always check with local authorities for specific disposal requirements to ensure proper environmental handling.",
         );
       }
 
@@ -250,6 +258,7 @@ IMPORTANT: Use only these exact words for wasteType: plastic, paper, metal, tras
         'E-waste': 'इलेक्ट्रॉनिक कचरा',
         'Biological': 'जैविक',
         'Trash': 'कचरा',
+        'Empty and rinse the bottle. Dispose of it in a designated recycling bin.': 'पहले बोतल को खाली करके अच्छी तरह धो लें। फिर इसे निर्दिष्ट रीसाइक्लिंग बिन में डालें। स्थानीय वेस्ट मैनेजमेंट गाइडलाइन्स के अनुसार निपटान करना सुनिश्चित करें।',
       },
       'ta': {
         'Plastic Water Bottle': 'பிளாஸ்டிக் தண்ணீர் பாட்டில்',

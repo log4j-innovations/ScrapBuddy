@@ -159,13 +159,17 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
         MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     } catch (e) {
-      print('Error saving language preference: $e');
+      // Using debugPrint instead of print for better practice
+      debugPrint('Error saving language preference: $e');
       if (!mounted) return;
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error saving language preference: $e'),
           backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          margin: const EdgeInsets.all(16),
         ),
       );
     }

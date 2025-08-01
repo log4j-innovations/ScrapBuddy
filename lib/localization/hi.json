@@ -39,5 +39,15 @@
   "e_waste": "इलेक्ट्रॉनिक कचरा",
   "recyclable": "पुनर्चक्रण योग्य",
   "non_recyclable": "गैर-पुनर्चक्रण योग्य",
-  "compostable": "कंपोस्ट योग्य"
+  "compostable": "कंपोस्ट योग्य",
+  "kg_co2_saved": "किलो CO2 बचाया",
+  "notifications_coming_soon": "नोटिफिकेशन फीचर जल्द आ रहा है!",
+  "feature_coming_soon": "फीचर जल्द आ रहा है!",
+  "classification_failed": "वर्टेक्स एआई के साथ कचरा वर्गीकरण विफल। कृपया पुनः प्रयास करें।",
+  "tts_unavailable": "टेक्स्ट-टू-स्पीच अस्थायी रूप से अनुपलब्ध। इसे ठीक करने पर काम कर रहे हैं!",
+  "audio_generation_failed": "ऑडियो जेनेरेशन विफल",
+  "unable_to_play_audio": "ऑडियो चलाने में असमर्थ",
+  "playing_audio": "ऑडियो चल रहा है",
+  "share_content": "साझा सामग्री",
+  "ai_powered_subtitle": "वर्टेक्स एआई द्वारा संचालित"
 }

@@ -7,19 +7,20 @@ import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 import '../models/waste_classification.dart';
 import '../services/vertex_ai_service.dart';
+import '../localization/localization_helper.dart';
 
 class ResultScreen extends StatefulWidget {
   final WasteClassification classification;
   final File imageFile;
 
   const ResultScreen({
-    Key? key,
+    super.key,
     required this.classification,
     required this.imageFile,
-  }) : super(key: key);
+  });
 
   @override
-  _ResultScreenState createState() => _ResultScreenState();
+  State<ResultScreen> createState() => _ResultScreenState();
 }
 
 class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderStateMixin {
@@ -58,9 +59,9 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        title: const Text(
-          'Classification Result',
-          style: TextStyle(fontWeight: FontWeight.w600),
+        title: Text(
+          LocalizationHelper.getString(context, 'classification_result', fallback: 'Classification Result'),
+          style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -98,7 +99,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -126,7 +127,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2E7D32).withOpacity(0.3),
+            color: const Color(0xFF2E7D32).withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -138,7 +139,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
           const Icon(Icons.psychology, color: Colors.white, size: 16),
           const SizedBox(width: 8),
           Text(
-            'Classified by Vertex AI • Language: ${_getLanguageName(selectedLanguage)}',
+            '${LocalizationHelper.getString(context, 'classified_by_vertex_ai', fallback: 'Classified by Vertex AI')} • ${LocalizationHelper.getString(context, 'language', fallback: 'Language')}: ${_getLanguageName(selectedLanguage)}',
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -151,25 +152,26 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
   }
 
   String _getLanguageName(String code) {
-    switch (code) {
-      case 'hi': return 'Hindi';
-      case 'ta': return 'Tamil';
-      case 'te': return 'Telugu';
-      case 'bn': return 'Bengali';
-      case 'mr': return 'Marathi';
-      case 'gu': return 'Gujarati';
-      case 'kn': return 'Kannada';
-      default: return 'English';
-    }
+    const Map<String, String> languageNames = {
+      'hi': 'Hindi',
+      'ta': 'Tamil', 
+      'te': 'Telugu',
+      'bn': 'Bengali',
+      'mr': 'Marathi',
+      'gu': 'Gujarati',
+      'kn': 'Kannada',
+      'en': 'English',
+    };
+    return languageNames[code] ?? 'English';
   }
 
   Widget _buildClassificationResults() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Classification Results',
-          style: TextStyle(
+        Text(
+          LocalizationHelper.getString(context, 'classification_result', fallback: 'Classification Results'),
+          style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
@@ -177,13 +179,13 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
         ),
         const SizedBox(height: 20),
         _buildResultCard(
-          'Waste Type',
+          LocalizationHelper.getString(context, 'waste_type', fallback: 'Waste Type'),
           widget.classification.wasteType,
           Icons.category_outlined,
           const Color(0xFF2196F3),
         ),
         _buildResultCard(
-          'Item Name',
+          LocalizationHelper.getString(context, 'item_name', fallback: 'Item Name'),
           widget.classification.translatedName ?? widget.classification.itemName,
           Icons.label_outline,
           const Color(0xFF4CAF50),
@@ -192,13 +194,13 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
           isPlaying: _isPlayingItemAudio,
         ),
         _buildResultCard(
-          'Recyclability',
+          LocalizationHelper.getString(context, 'recyclability', fallback: 'Recyclability'),
           widget.classification.recyclability,
           Icons.recycling,
           _getRecyclabilityColor(),
         ),
         _buildResultCard(
-          'Estimated Value',
+          LocalizationHelper.getString(context, 'estimated_value', fallback: 'Estimated Value'),
           '₹${widget.classification.monetaryValue}',
           Icons.currency_rupee,
           const Color(0xFFFF9800),
@@ -225,7 +227,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -236,7 +238,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 24),
@@ -274,7 +276,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
                 color: const Color(0xFF2E7D32),
               ),
               style: IconButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32).withOpacity(0.1),
+                backgroundColor: const Color(0xFF2E7D32).withValues(alpha: 0.1),
                 padding: const EdgeInsets.all(8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -294,7 +296,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -308,16 +310,16 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF9C27B0).withOpacity(0.1),
+                  color: const Color(0xFF9C27B0).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.info_outline, color: Color(0xFF9C27B0), size: 24),
               ),
               const SizedBox(width: 16),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Disposal Instructions',
-                  style: TextStyle(
+                  LocalizationHelper.getString(context, 'disposal_instructions', fallback: 'Disposal Instructions'),
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
@@ -331,7 +333,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
                   color: const Color(0xFF9C27B0),
                 ),
                 style: IconButton.styleFrom(
-                  backgroundColor: const Color(0xFF9C27B0).withOpacity(0.1),
+                  backgroundColor: const Color(0xFF9C27B0).withValues(alpha: 0.1),
                   padding: const EdgeInsets.all(8),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -361,9 +363,9 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
           child: ElevatedButton.icon(
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.camera_alt, size: 20),
-            label: const Text(
-              'Scan Another',
-              style: TextStyle(fontWeight: FontWeight.w600),
+            label: Text(
+              LocalizationHelper.getString(context, 'scan_another', fallback: 'Scan Another'),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2E7D32),
@@ -381,9 +383,9 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
           child: ElevatedButton.icon(
             onPressed: _shareResult,
             icon: const Icon(Icons.share, size: 20),
-            label: const Text(
-              'Share Result',
-              style: TextStyle(fontWeight: FontWeight.w600),
+            label: Text(
+              LocalizationHelper.getString(context, 'share_result', fallback: 'Share Result'),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
@@ -428,7 +430,8 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
       await _playTTSAudio(textToSpeak);
 
     } catch (e) {
-      _showSnackBar('Unable to play audio: ${e.toString()}', Colors.red);
+      _showSnackBar(LocalizationHelper.getString(context, 'unable_to_play_audio', 
+          fallback: 'Unable to play audio: ${e.toString()}'), Colors.red);
     } finally {
       Future.delayed(const Duration(seconds: 3), () {
         if (mounted) {
@@ -454,7 +457,8 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
       await _playTTSAudio(textToSpeak);
 
     } catch (e) {
-      _showSnackBar('Unable to play instruction audio: ${e.toString()}', Colors.red);
+      _showSnackBar(LocalizationHelper.getString(context, 'unable_to_play_audio', 
+          fallback: 'Unable to play instruction audio: ${e.toString()}'), Colors.red);
     } finally {
       Future.delayed(const Duration(seconds: 5), () {
         if (mounted) {
@@ -468,54 +472,49 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
 
   Future<void> _playTTSAudio(String text) async {
     try {
-      // Get base64 audio from Sarvam AI TTS
       String? base64Audio = await _vertexAIService.getTextToSpeechBase64(text, selectedLanguage);
       
       if (base64Audio != null) {
-        // Decode base64 to bytes
         Uint8List audioBytes = base64Decode(base64Audio);
         
-        // Save to temporary file
         Directory tempDir = await getTemporaryDirectory();
         String audioPath = '${tempDir.path}/tts_audio_${DateTime.now().millisecondsSinceEpoch}.wav';
         File audioFile = File(audioPath);
         await audioFile.writeAsBytes(audioBytes);
         
-        // Play the audio file
         await _audioPlayer.play(DeviceFileSource(audioPath));
         
-        // Clean up after playing
         Future.delayed(const Duration(seconds: 10), () {
           if (audioFile.existsSync()) {
             audioFile.deleteSync();
           }
         });
         
-        _showSnackBar('🔊 Playing audio in ${_getLanguageName(selectedLanguage)}', const Color(0xFF2E7D32));
+        _showSnackBar('🔊 ${LocalizationHelper.getString(context, 'playing_audio', fallback: 'Playing audio in')} ${_getLanguageName(selectedLanguage)}', const Color(0xFF2E7D32));
       } else {
-        _showSnackBar('TTS service temporarily unavailable', Colors.orange);
+        _showSnackBar(LocalizationHelper.getString(context, 'tts_unavailable', fallback: 'TTS service temporarily unavailable'), Colors.orange);
       }
     } catch (e) {
       print('TTS playback error: $e');
-      _showSnackBar('Audio playback failed', Colors.red);
+      _showSnackBar(LocalizationHelper.getString(context, 'audio_generation_failed', fallback: 'Audio playback failed'), Colors.red);
     }
   }
 
   void _shareResult() {
     final String shareText = '''
-🤖 ScrapBuddy Classification Results (Vertex AI Powered)
+🤖 ScrapBuddy ${LocalizationHelper.getString(context, 'classification_result', fallback: 'Classification Results')} (Vertex AI Powered)
 
-📦 Waste Type: ${widget.classification.wasteType}
-🏷️ Item: ${widget.classification.translatedName ?? widget.classification.itemName}
-♻️ Recyclability: ${widget.classification.recyclability}
-💰 Est. Value: ₹${widget.classification.monetaryValue}
-📋 Instructions: ${widget.classification.translatedInstructions ?? widget.classification.disposalInstructions}
+📦 ${LocalizationHelper.getString(context, 'waste_type', fallback: 'Waste Type')}: ${widget.classification.wasteType}
+🏷️ ${LocalizationHelper.getString(context, 'item_name', fallback: 'Item')}: ${widget.classification.translatedName ?? widget.classification.itemName}
+♻️ ${LocalizationHelper.getString(context, 'recyclability', fallback: 'Recyclability')}: ${widget.classification.recyclability}
+💰 ${LocalizationHelper.getString(context, 'estimated_value', fallback: 'Est. Value')}: ₹${widget.classification.monetaryValue}
+📋 ${LocalizationHelper.getString(context, 'disposal_instructions', fallback: 'Instructions')}: ${widget.classification.translatedInstructions ?? widget.classification.disposalInstructions}
 
-Language: ${_getLanguageName(selectedLanguage)}
+${LocalizationHelper.getString(context, 'language', fallback: 'Language')}: ${_getLanguageName(selectedLanguage)}
 #ScrapBuddy #VertexAI #WasteManagement #Recycling
     ''';
     
-    _showSnackBar('Share content copied: $shareText', const Color(0xFF2E7D32));
+    _showSnackBar('${LocalizationHelper.getString(context, 'share_content', fallback: 'Share content')}: $shareText', const Color(0xFF2E7D32));
   }
 
   void _showSnackBar(String message, Color color) {

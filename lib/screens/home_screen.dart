@@ -3,14 +3,14 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../services/vertex_ai_service.dart';
 import '../widgets/stats_card.dart';
-import '../localization/app_localizations.dart';
+import '../localization/localization_helper.dart';
 import 'result_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
@@ -21,26 +21,24 @@ class _HomeScreenState extends State<HomeScreen> {
   
   int todaysPoints = 25;
   int recyclableItemsScanned = 12;
-  String environmentalImpact = "5 kg CO2 saved";
+  String environmentalImpact = "5";
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.current;
-    
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       body: SafeArea(
-        child: _isLoading ? _buildLoadingView(localizations) : _buildMainView(localizations),
+        bottom: false,
+        child: _isLoading ? _buildLoadingView() : _buildMainView(),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(localizations),
+      bottomNavigationBar: _buildBottomNavigationBar(),
       floatingActionButton: _isLoading ? null : _buildFloatingActionButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
-  Widget _buildBottomNavigationBar(AppLocalizations localizations) {
+  Widget _buildBottomNavigationBar() {
     return Container(
-      height: 70,
       decoration: const BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -53,19 +51,35 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: BottomAppBar(
         shape: const CircularNotchedRectangle(),
-        notchMargin: 6.0,
+        notchMargin: 4.0,
         color: Colors.white,
         elevation: 0,
-        height: 70,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        height: 56,
+        child: Container(
+          height: 56,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(Icons.home_outlined, Icons.home, localizations.home, 0),
-              const SizedBox(width: 60),
-              _buildNavItem(Icons.history_outlined, Icons.history, localizations.history, 2),
-              _buildNavItem(Icons.person_outline, Icons.person, localizations.profile, 3),
+              _buildNavItem(
+                Icons.home_outlined, 
+                Icons.home, 
+                LocalizationHelper.getString(context, 'home', fallback: 'Home'), 
+                0
+              ),
+              const SizedBox(width: 48), // Space for FAB
+              _buildNavItem(
+                Icons.history_outlined, 
+                Icons.history, 
+                LocalizationHelper.getString(context, 'history', fallback: 'History'), 
+                2
+              ),
+              _buildNavItem(
+                Icons.person_outline, 
+                Icons.person, 
+                LocalizationHelper.getString(context, 'profile', fallback: 'Profile'), 
+                3
+              ),
             ],
           ),
         ),
@@ -81,29 +95,31 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() {
             _currentIndex = index;
           });
-          _handleNavigation(index);
+          _handleNavigation(index, label);
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 4),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 isSelected ? filledIcon : outlinedIcon,
                 color: isSelected ? const Color(0xFF2E7D32) : Colors.grey.shade500,
-                size: 24,
+                size: 22,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 10,
                   color: isSelected ? const Color(0xFF2E7D32) : Colors.grey.shade500,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -112,34 +128,35 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _handleNavigation(int index) {
-    final localizations = AppLocalizations.current;
+  void _handleNavigation(int index, String label) {
     switch (index) {
       case 0:
         break;
       case 2:
-        _showSnackBar('${localizations.history} feature coming soon!');
+        _showSnackBar(LocalizationHelper.getString(context, 'feature_coming_soon', 
+            fallback: '$label feature coming soon!'));
         break;
       case 3:
-        _showSnackBar('${localizations.profile} feature coming soon!');
+        _showSnackBar(LocalizationHelper.getString(context, 'feature_coming_soon', 
+            fallback: '$label feature coming soon!'));
         break;
     }
   }
 
   Widget _buildFloatingActionButton() {
     return Container(
-      width: 66,
-      height: 66,
+      width: 60,
+      height: 60,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(33),
+        borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2E7D32).withOpacity(0.3),
+            color: const Color(0xFF2E7D32).withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -153,13 +170,13 @@ class _HomeScreenState extends State<HomeScreen> {
         child: const Icon(
           Icons.qr_code_scanner,
           color: Colors.white,
-          size: 28,
+          size: 26,
         ),
       ),
     );
   }
 
-  Widget _buildLoadingView(AppLocalizations localizations) {
+  Widget _buildLoadingView() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -174,7 +191,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            localizations.analyzingWithAI,
+            LocalizationHelper.getString(context, 'analyzing_with_ai', 
+                fallback: 'Analyzing with Vertex AI...'),
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -183,37 +201,45 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            localizations.pleaseWait,
+            LocalizationHelper.getString(context, 'please_wait', 
+                fallback: 'Please wait while we classify your waste'),
             style: const TextStyle(
               fontSize: 14,
               color: Colors.grey,
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMainView(AppLocalizations localizations) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(localizations),
-            const SizedBox(height: 32),
-            _buildScanWasteCard(localizations),
-            const SizedBox(height: 32),
-            _buildQuickInfoSection(localizations),
-            const SizedBox(height: 140),
-          ],
+  Widget _buildMainView() {
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(),
+                  const SizedBox(height: 32),
+                  _buildScanWasteCard(),
+                  const SizedBox(height: 32),
+                  _buildQuickInfoSection(),
+                  const SizedBox(height: 20), // Reduced padding for bottom nav
+                ],
+              ),
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 
-  Widget _buildHeader(AppLocalizations localizations) {
+  Widget _buildHeader() {
     return Row(
       children: [
         const CircleAvatar(
@@ -227,7 +253,7 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                localizations.appName,
+                LocalizationHelper.getString(context, 'app_name', fallback: 'ScrapBuddy'),
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -235,7 +261,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               Text(
-                '${localizations.classifiedByVertexAI}',
+                LocalizationHelper.getString(context, 'ai_powered_subtitle', 
+                    fallback: 'AI-Powered by Vertex AI'),
                 style: const TextStyle(
                   fontSize: 14,
                   color: Colors.grey,
@@ -246,7 +273,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         IconButton(
           onPressed: () {
-            _showSnackBar('Notifications feature coming soon!');
+            _showSnackBar(LocalizationHelper.getString(context, 'notifications_coming_soon', 
+                fallback: 'Notifications feature coming soon!'));
           },
           icon: const Icon(Icons.notifications_outlined, size: 24),
           style: IconButton.styleFrom(
@@ -261,7 +289,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildScanWasteCard(AppLocalizations localizations) {
+  Widget _buildScanWasteCard() {
     return GestureDetector(
       onTap: () => _showImageSourceDialog(),
       child: Container(
@@ -276,7 +304,7 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFFB5B5).withOpacity(0.3),
+              color: const Color(0xFFFFB5B5).withValues(alpha: 0.3),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
@@ -285,11 +313,12 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Camera Icon (same as before)
             Container(
               width: 140,
               height: 90,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.grey.shade300, width: 2),
               ),
@@ -340,7 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 20),
             Text(
-              localizations.scanWaste,
+              LocalizationHelper.getString(context, 'scan_waste', fallback: 'Scan Waste'),
               style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -349,7 +378,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              localizations.identifyMaterials,
+              LocalizationHelper.getString(context, 'identify_materials', 
+                  fallback: 'Identify material types and get disposal\ninstructions'),
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey.shade700,
@@ -361,9 +391,9 @@ class _HomeScreenState extends State<HomeScreen> {
               width: double.infinity,
               height: 48,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withOpacity(0.3)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -371,7 +401,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const Icon(Icons.upload, color: Colors.black54, size: 20),
                   const SizedBox(width: 8),
                   Text(
-                    localizations.uploadImage,
+                    LocalizationHelper.getString(context, 'upload_image', fallback: 'Upload Image'),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -387,12 +417,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildQuickInfoSection(AppLocalizations localizations) {
+  Widget _buildQuickInfoSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          localizations.quickInfo,
+          LocalizationHelper.getString(context, 'quick_info', fallback: 'Quick Info'),
           style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -404,7 +434,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Expanded(
               child: StatsCard(
-                title: localizations.todaysPoints,
+                title: LocalizationHelper.getString(context, 'todays_points', fallback: "Today's Points"),
                 value: todaysPoints.toString(),
                 color: const Color(0xFF2E7D32),
               ),
@@ -412,7 +442,8 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 16),
             Expanded(
               child: StatsCard(
-                title: localizations.recyclableItems,
+                title: LocalizationHelper.getString(context, 'recyclable_items', 
+                    fallback: "Recyclable\nItems Scanned"),
                 value: recyclableItemsScanned.toString(),
                 color: const Color(0xFF1976D2),
               ),
@@ -428,7 +459,7 @@ class _HomeScreenState extends State<HomeScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -438,7 +469,8 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                localizations.environmentalImpact,
+                LocalizationHelper.getString(context, 'environmental_impact', 
+                    fallback: 'Environmental Impact'),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -455,7 +487,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    environmentalImpact,
+                    '$environmentalImpact ${LocalizationHelper.getString(context, 'kg_co2_saved', fallback: 'kg CO2 saved')}',
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -472,8 +504,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showImageSourceDialog() {
-    final localizations = AppLocalizations.current;
-    
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -496,7 +526,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                localizations.selectImageSource,
+                LocalizationHelper.getString(context, 'select_image_source', 
+                    fallback: 'Select Image Source'),
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -515,16 +546,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 20),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2E7D32).withOpacity(0.1),
+                          color: const Color(0xFF2E7D32).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFF2E7D32).withOpacity(0.3)),
+                          border: Border.all(color: const Color(0xFF2E7D32).withValues(alpha: 0.3)),
                         ),
                         child: Column(
                           children: [
                             const Icon(Icons.camera_alt, size: 32, color: Color(0xFF2E7D32)),
                             const SizedBox(height: 8),
                             Text(
-                              localizations.camera,
+                              LocalizationHelper.getString(context, 'camera', fallback: 'Camera'),
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -546,16 +577,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 20),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1976D2).withOpacity(0.1),
+                          color: const Color(0xFF1976D2).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFF1976D2).withOpacity(0.3)),
+                          border: Border.all(color: const Color(0xFF1976D2).withValues(alpha: 0.3)),
                         ),
                         child: Column(
                           children: [
                             const Icon(Icons.photo_library, size: 32, color: Color(0xFF1976D2)),
                             const SizedBox(height: 8),
                             Text(
-                              localizations.gallery,
+                              LocalizationHelper.getString(context, 'gallery', fallback: 'Gallery'),
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -602,7 +633,7 @@ class _HomeScreenState extends State<HomeScreen> {
             todaysPoints += 5;
             recyclableItemsScanned += 1;
             if (result.recyclability.toLowerCase().contains('recyclable')) {
-              environmentalImpact = "${int.parse(environmentalImpact.split(' ')[0]) + 1} kg CO2 saved";
+              environmentalImpact = "${int.parse(environmentalImpact) + 1}";
             }
           });
           
@@ -616,7 +647,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           );
         } else {
-          _showSnackBar('Failed to classify waste with Vertex AI. Please try again.');
+          _showSnackBar(LocalizationHelper.getString(context, 'classification_failed', 
+              fallback: 'Failed to classify waste with Vertex AI. Please try again.'));
         }
       }
     } catch (e) {
