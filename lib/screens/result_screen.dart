@@ -99,7 +99,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withOpacity( 0.1),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -127,7 +127,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2E7D32).withValues(alpha: 0.3),
+            color: const Color(0xFF2E7D32).withOpacity( 0.3),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -227,7 +227,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity( 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -238,7 +238,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: color.withOpacity( 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 24),
@@ -276,7 +276,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
                 color: const Color(0xFF2E7D32),
               ),
               style: IconButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32).withValues(alpha: 0.1),
+                backgroundColor: const Color(0xFF2E7D32).withOpacity( 0.1),
                 padding: const EdgeInsets.all(8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -296,7 +296,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity( 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -310,7 +310,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF9C27B0).withValues(alpha: 0.1),
+                  color: const Color(0xFF9C27B0).withOpacity( 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.info_outline, color: Color(0xFF9C27B0), size: 24),
@@ -333,7 +333,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
                   color: const Color(0xFF9C27B0),
                 ),
                 style: IconButton.styleFrom(
-                  backgroundColor: const Color(0xFF9C27B0).withValues(alpha: 0.1),
+                  backgroundColor: const Color(0xFF9C27B0).withOpacity( 0.1),
                   padding: const EdgeInsets.all(8),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),

@@ -81,6 +81,7 @@ lib/generated_plugin_registrant.dart
 
 # API Keys and Sensitive Data (CRITICAL - NEVER COMMIT)
 **/android/app/src/main/res/values/secrets.xml
+**/android/app/src/main/res/values/string.xml
 **/config/secrets.dart
 **/config/api_keys.dart
 secrets.json

@@ -73,7 +73,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF2E7D32).withValues(alpha: 0.1) : Colors.white,
+                      color: isSelected ? const Color(0xFF2E7D32).withOpacity( 0.1) : Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: isSelected ? const Color(0xFF2E7D32) : Colors.grey.shade200,
@@ -81,7 +81,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                       ),
                       boxShadow: isSelected ? [
                         BoxShadow(
-                          color: const Color(0xFF2E7D32).withValues(alpha: 0.2),
+                          color: const Color(0xFF2E7D32).withOpacity( 0.2),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),

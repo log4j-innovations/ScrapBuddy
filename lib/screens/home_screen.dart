@@ -54,10 +54,14 @@ class _HomeScreenState extends State<HomeScreen> {
         notchMargin: 4.0,
         color: Colors.white,
         elevation: 0,
-        height: 56,
+        height: 70,
         child: Container(
-          height: 56,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          height: 70,
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).padding.bottom,
+            left: 12,
+            right: 12,
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -156,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2E7D32).withValues(alpha: 0.3),
+            color: const Color(0xFF2E7D32).withOpacity( 0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -304,7 +308,7 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFFB5B5).withValues(alpha: 0.3),
+              color: const Color(0xFFFFB5B5).withOpacity( 0.3),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
@@ -318,7 +322,7 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 140,
               height: 90,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.9),
+                color: Colors.white.withOpacity( 0.9),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.grey.shade300, width: 2),
               ),
@@ -391,9 +395,9 @@ class _HomeScreenState extends State<HomeScreen> {
               width: double.infinity,
               height: 48,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: Colors.white.withOpacity( 0.2),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                border: Border.all(color: Colors.white.withOpacity( 0.3)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -459,7 +463,7 @@ class _HomeScreenState extends State<HomeScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
+                color: Colors.black.withOpacity( 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -546,9 +550,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 20),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2E7D32).withValues(alpha: 0.1),
+                          color: const Color(0xFF2E7D32).withOpacity( 0.1),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFF2E7D32).withValues(alpha: 0.3)),
+                          border: Border.all(color: const Color(0xFF2E7D32).withOpacity( 0.3)),
                         ),
                         child: Column(
                           children: [
@@ -577,9 +581,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 20),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1976D2).withValues(alpha: 0.1),
+                          color: const Color(0xFF1976D2).withOpacity( 0.1),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFF1976D2).withValues(alpha: 0.3)),
+                          border: Border.all(color: const Color(0xFF1976D2).withOpacity( 0.3)),
                         ),
                         child: Column(
                           children: [

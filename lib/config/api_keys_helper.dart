@@ -9,15 +9,24 @@ class ApiKeysHelper {
   // Load API keys from Android resources
   static Future<void> loadApiKeys() async {
     try {
-      _vertexAIKey = await _channel.invokeMethod('getVertexAIKey');
-      _sarvamAIKey = await _channel.invokeMethod('getSarvamAIKey');
-      print('✅ API keys loaded successfully from secrets.xml');
+      // Try to load from native platform
+      final vertexKey = await _channel.invokeMethod<String>('getVertexAIKey');
+      final sarvamKey = await _channel.invokeMethod<String>('getSarvamAIKey');
+      
+      if (vertexKey != null && sarvamKey != null) {
+        _vertexAIKey = vertexKey;
+        _sarvamAIKey = sarvamKey;
+        print('✅ API keys loaded successfully from secrets.xml');
+        return;
+      }
     } catch (e) {
-      print('❌ Error loading API keys: $e');
-      // Use fallback keys if loading fails
-      _vertexAIKey = 'AIzaSyCVOs81A4E9PTELfPjbq3Aodo42vXWc_YE';
-      _sarvamAIKey = 'sk_lv0yw89o_t9ka4hdg9HMfP4RsC854EL7O';
+      print('❌ Error loading API keys from platform: $e');
     }
+
+    // Use fallback keys if loading fails
+    print('⚠️ Using fallback API keys');
+    _vertexAIKey = 'AIzaSyCVOs81A4E9PTELfPjbq3Aodo42vXWc_YE';
+    _sarvamAIKey = 'sk_lv0yw89o_t9ka4hdg9HMfP4RsC854EL7O';
   }
   
   static String get vertexAIKey => _vertexAIKey ?? 'AIzaSyCVOs81A4E9PTELfPjbq3Aodo42vXWc_YE';

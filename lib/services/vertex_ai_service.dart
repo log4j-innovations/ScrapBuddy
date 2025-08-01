@@ -215,6 +215,12 @@ IMPORTANT:
 
   Future<String?> _translateText(String text, String targetLanguage) async {
     try {
+      // First try fallback translation
+      String? fallbackTranslation = _getFallbackTranslation(text, targetLanguage);
+      if (fallbackTranslation != null) {
+        return fallbackTranslation;
+      }
+
       final targetLangCode = _languageCodeMap[targetLanguage] ?? 'hi-IN';
       
       final translationResponse = await http.post(
@@ -225,22 +231,25 @@ IMPORTANT:
           'Accept': 'application/json',
         },
         body: json.encode({
-          'input': text,
-          'source_language_code': 'en-IN',
-          'target_language_code': targetLangCode,
-          'speaker_gender': 'Male',
-          'mode': 'formal'
+          'text': text,
+          'source_language': 'en',
+          'target_language': targetLangCode.split('-')[0],
+          'domain': 'general'
         }),
       );
 
       if (translationResponse.statusCode == 200) {
         final translationData = json.decode(translationResponse.body);
-        return translationData['translated_text'];
+        if (translationData['translation'] != null) {
+          return translationData['translation'];
+        }
       }
-      return null;
+      
+      // If API fails, return fallback or original text
+      return text;
     } catch (e) {
       print('Translation error: $e');
-      return null;
+      return text; // Return original text on error
     }
   }
 
@@ -294,6 +303,7 @@ IMPORTANT:
   Future<String?> getTextToSpeechBase64(String text, String language) async {
     try {
       final languageCode = _languageCodeMap[language] ?? 'hi-IN';
+      print('Requesting TTS for language: $languageCode with text: $text');
       
       final ttsResponse = await http.post(
         Uri.parse('https://api.sarvam.ai/text-to-speech'),
@@ -311,16 +321,33 @@ IMPORTANT:
         }),
       );
 
+      print('TTS Response Status: ${ttsResponse.statusCode}');
+      print('TTS Response Body: ${ttsResponse.body}');
+
       if (ttsResponse.statusCode == 200) {
         final ttsData = json.decode(ttsResponse.body);
         if (ttsData['audios'] != null && ttsData['audios'].isNotEmpty) {
           return ttsData['audios'][0];
         }
       }
+      print('TTS failed with status: ${ttsResponse.statusCode}');
       return null;
     } catch (e) {
       print('TTS error: $e');
       return null;
+    }
+  }
+
+  String _getSpeakerForLanguage(String languageCode) {
+    switch (languageCode.split('-')[0]) {
+      case 'hi':
+        return 'hindi_female_voice_1';
+      case 'ta':
+        return 'tamil_female_voice_1';
+      case 'te':
+        return 'telugu_female_voice_1';
+      default:
+        return 'hindi_female_voice_1';
     }
   }
 }
