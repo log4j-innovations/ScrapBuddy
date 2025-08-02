@@ -211,7 +211,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
           const Icon(Icons.psychology, color: Colors.white, size: 16),
           const SizedBox(width: 8),
           Text(
-            '${LocalizationHelper.getString(context, 'classified_by_scrapbuddy', fallback: 'Classified by ScrapBuddy')} • ${LocalizationHelper.getString(context, 'language', fallback: 'Language')}: ${_getLanguageName(selectedLanguage)}',
+            '${LocalizationHelper.getString(context, 'classified_by_scrapbuddy', fallback: 'Classified by ScrapBuddy')} • ${LocalizationHelper.getString(context, 'language', fallback: 'Language')}: ${LocalizationHelper.getString(context, selectedLanguage, fallback: _getLanguageName(selectedLanguage))}',
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -224,17 +224,16 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
   }
 
   String _getLanguageName(String code) {
-    const Map<String, String> languageNames = {
-      'hi': 'Hindi',
-      'ta': 'Tamil', 
-      'te': 'Telugu',
-      'bn': 'Bengali',
-      'mr': 'Marathi',
-      'gu': 'Gujarati',
-      'kn': 'Kannada',
+    return LocalizationHelper.getString(context, code, fallback: {
+      'hi': 'हिंदी',
+      'ta': 'தமிழ்', 
+      'te': 'తెలుగు',
+      'bn': 'বাংলা',
+      'mr': 'मराठी',
+      'gu': 'ગુજરાતી',
+      'kn': 'ಕನ್ನಡ',
       'en': 'English',
-    };
-    return languageNames[code] ?? 'English';
+    }[code] ?? 'English');
   }
 
   Widget _buildFeedbackSection() {
@@ -412,7 +411,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
         const SizedBox(height: 20),
         _buildResultCard(
           LocalizationHelper.getString(context, 'waste_type', fallback: 'Waste Type'),
-          widget.classification.wasteType,
+          LocalizationHelper.getString(context, widget.classification.wasteType.toLowerCase(), fallback: widget.classification.wasteType),
           Icons.category_outlined,
           const Color(0xFF2196F3),
         ),
@@ -427,7 +426,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
         ),
         _buildResultCard(
           LocalizationHelper.getString(context, 'recyclability', fallback: 'Recyclability'),
-          widget.classification.recyclability,
+          LocalizationHelper.getString(context, widget.classification.recyclability.toLowerCase(), fallback: widget.classification.recyclability),
           Icons.recycling,
           _getRecyclabilityColor(),
         ),
@@ -636,7 +635,8 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
   }
 
   Color _getRecyclabilityColor() {
-    switch (widget.classification.recyclability.toLowerCase()) {
+    final recyclability = widget.classification.recyclability.toLowerCase();
+    switch (recyclability) {
       case 'recyclable':
         return const Color(0xFF4CAF50);
       case 'non-recyclable':
@@ -722,7 +722,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
           }
         });
         
-        _showSnackBar('🔊 ${LocalizationHelper.getString(context, 'playing_audio', fallback: 'Playing audio in')} ${_getLanguageName(selectedLanguage)}', const Color(0xFF2E7D32));
+        _showSnackBar('🔊 ${LocalizationHelper.getString(context, 'playing_audio', fallback: 'Playing audio in')} ${LocalizationHelper.getString(context, selectedLanguage, fallback: _getLanguageName(selectedLanguage))}', const Color(0xFF2E7D32));
       } else {
         _showSnackBar(LocalizationHelper.getString(context, 'tts_unavailable', fallback: 'TTS service temporarily unavailable'), Colors.orange);
       }
@@ -736,9 +736,9 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
     final String shareText = '''
 🤖 ScrapBuddy ${LocalizationHelper.getString(context, 'classification_result', fallback: 'Classification Results')}
 
-📦 ${LocalizationHelper.getString(context, 'waste_type', fallback: 'Waste Type')}: ${widget.classification.wasteType}
+📦 ${LocalizationHelper.getString(context, 'waste_type', fallback: 'Waste Type')}: ${LocalizationHelper.getString(context, widget.classification.wasteType.toLowerCase(), fallback: widget.classification.wasteType)}
 🏷️ ${LocalizationHelper.getString(context, 'item_name', fallback: 'Item')}: ${widget.classification.translatedName ?? widget.classification.itemName}
-♻️ ${LocalizationHelper.getString(context, 'recyclability', fallback: 'Recyclability')}: ${widget.classification.recyclability}
+♻️ ${LocalizationHelper.getString(context, 'recyclability', fallback: 'Recyclability')}: ${LocalizationHelper.getString(context, widget.classification.recyclability.toLowerCase(), fallback: widget.classification.recyclability)}
 💰 ${LocalizationHelper.getString(context, 'estimated_value', fallback: 'Est. Value')}: ₹${widget.classification.monetaryValue}
 📋 ${LocalizationHelper.getString(context, 'disposal_instructions', fallback: 'Instructions')}: ${widget.classification.translatedInstructions ?? widget.classification.disposalInstructions}
 

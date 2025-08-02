@@ -49,13 +49,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     if (difference.inDays == 0) {
       if (difference.inHours == 0) {
-        return '${difference.inMinutes} minutes ago';
+        return '${difference.inMinutes} ${LocalizationHelper.getString(context, 'minutes_ago', fallback: 'minutes ago')}';
       }
-      return '${difference.inHours} hours ago';
+      return '${difference.inHours} ${LocalizationHelper.getString(context, 'hours_ago', fallback: 'hours ago')}';
     } else if (difference.inDays == 1) {
-      return 'Yesterday';
+      return LocalizationHelper.getString(context, 'yesterday', fallback: 'Yesterday');
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
+      return '${difference.inDays} ${LocalizationHelper.getString(context, 'days_ago', fallback: 'days ago')}';
     } else {
       return '${date.day}/${date.month}/${date.year}';
     }
@@ -114,11 +114,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildScanCard(Map<String, dynamic> scan) {
-    final wasteType = scan['wasteType']?.toString() ?? 'Unknown';
+    final wasteType = scan['wasteType']?.toString() ?? LocalizationHelper.getString(context, 'unknown', fallback: 'Unknown');
     final points = scan['points'] ?? 0;
     final co2Saved = scan['co2Saved'] ?? 0.0;
     final timestamp = scan['timestamp'];
-    final recyclability = scan['recyclability']?.toString() ?? 'Unknown';
+    final recyclability = scan['recyclability']?.toString() ?? LocalizationHelper.getString(context, 'unknown', fallback: 'Unknown');
     
     DateTime? scanDate;
     if (timestamp != null) {
@@ -165,7 +165,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        wasteType.toUpperCase(),
+                        LocalizationHelper.getString(context, wasteType.toLowerCase(), fallback: wasteType.toUpperCase()),
                         style: AppTheme.headingStyle.copyWith(
                           fontSize: 16,
                           color: _getWasteTypeColor(wasteType),
@@ -191,7 +191,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    recyclability,
+                    LocalizationHelper.getString(context, recyclability.toLowerCase(), fallback: recyclability),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,

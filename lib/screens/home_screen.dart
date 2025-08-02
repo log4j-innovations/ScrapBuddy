@@ -94,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  _isOnline ? 'Online' : 'Offline',
+                  _isOnline ? LocalizationHelper.getString(context, 'online', fallback: 'Online') : LocalizationHelper.getString(context, 'offline', fallback: 'Offline'),
                   style: TextStyle(
                     fontSize: 12,
                     color: _isOnline ? const Color(0xFF2E7D32) : Colors.grey,

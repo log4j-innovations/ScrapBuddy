@@ -97,13 +97,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   String _getLanguageName(String languageCode) {
-    switch (languageCode) {
-      case 'en': return 'English';
-      case 'hi': return 'हिंदी';
-      case 'ta': return 'தமிழ்';
-      case 'te': return 'తెలుగు';
-      default: return 'English';
-    }
+    return LocalizationHelper.getString(context, languageCode, fallback: {
+      'en': 'English',
+      'hi': 'हिंदी',
+      'ta': 'தமிழ்',
+      'te': 'తెలుగు',
+    }[languageCode] ?? 'English');
   }
 
   Future<void> _signOut() async {
@@ -171,15 +170,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: Text(LocalizationHelper.getString(context, 'profile_title', fallback: 'Profile')),
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : _userData == null
-              ? const Center(child: Text('No user data found'))
+              ? Center(child: Text(LocalizationHelper.getString(context, 'no_user_data_found', fallback: 'No user data found')))
               : SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -225,7 +224,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             
                             // User Name
                             Text(
-                              _userData!.name ?? 'User',
+                              _userData!.name ?? LocalizationHelper.getString(context, 'user', fallback: 'User'),
                               style: AppTheme.headingStyle.copyWith(fontSize: 24),
                             ),
                             const SizedBox(height: 4),
@@ -387,10 +386,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 labelText: LocalizationHelper.getString(context, 'select_language', fallback: 'Select Language'),
                               ),
                               items: [
-                                DropdownMenuItem(value: 'en', child: Text('English')),
-                                DropdownMenuItem(value: 'hi', child: Text('हिंदी')),
-                                DropdownMenuItem(value: 'ta', child: Text('தமிழ்')),
-                                DropdownMenuItem(value: 'te', child: Text('తెలుగు')),
+                                DropdownMenuItem(value: 'en', child: Text(LocalizationHelper.getString(context, 'en', fallback: 'English'))),
+                                DropdownMenuItem(value: 'hi', child: Text(LocalizationHelper.getString(context, 'hi', fallback: 'हिंदी'))),
+                                DropdownMenuItem(value: 'ta', child: Text(LocalizationHelper.getString(context, 'ta', fallback: 'தமிழ்'))),
+                                DropdownMenuItem(value: 'te', child: Text(LocalizationHelper.getString(context, 'te', fallback: 'తెలుగు'))),
                               ],
                               onChanged: (value) {
                                 if (value != null) {

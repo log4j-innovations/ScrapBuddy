@@ -17,15 +17,24 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
   String? selectedLanguage;
 
   final List<Map<String, String>> languages = [
-    {'code': 'hi', 'name': 'Hindi', 'native': 'हिंदी'},
     {'code': 'en', 'name': 'English', 'native': 'English'},
-    {'code': 'ta', 'name': 'Tamil', 'native': 'தமிழ்'},
-    {'code': 'te', 'name': 'Telugu', 'native': 'తెలుగు'},
-    {'code': 'bn', 'name': 'Bengali', 'native': 'বাংলা'},
-    {'code': 'mr', 'name': 'Marathi', 'native': 'मराठी'},
-    {'code': 'gu', 'name': 'Gujarati', 'native': 'ગુજરાતી'},
-    {'code': 'kn', 'name': 'Kannada', 'native': 'ಕನ್ನಡ'},
+    {'code': 'hi', 'name': 'हिंदी', 'native': 'हिंदी'},
+    {'code': 'ta', 'name': 'தமிழ்', 'native': 'தமிழ்'},
+    {'code': 'te', 'name': 'తెలుగు', 'native': 'తెలుగు'},
+    {'code': 'bn', 'name': 'বাংলা', 'native': 'বাংলা'},
+    {'code': 'mr', 'name': 'मराठी', 'native': 'मराठी'},
+    {'code': 'gu', 'name': 'ગુજરાતી', 'native': 'ગુજરાતી'},
+    {'code': 'kn', 'name': 'ಕನ್ನಡ', 'native': 'ಕನ್ನಡ'},
   ];
+
+  String _getLanguageName(String languageCode) {
+    return LocalizationHelper.getString(context, languageCode, fallback: {
+      'en': 'English',
+      'hi': 'हिंदी',
+      'ta': 'தமிழ்',
+      'te': 'తెలుగు',
+    }[languageCode] ?? 'English');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,13 +98,26 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                       ] : [],
                     ),
                     child: RadioListTile<String>(
-                      title: Text(
-                        '${language['name']} (${language['native']})',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                          color: isSelected ? const Color(0xFF2E7D32) : Colors.black87,
-                        ),
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            LocalizationHelper.getString(context, language['code']!, fallback: language['name']!),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                              color: isSelected ? const Color(0xFF2E7D32) : Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            language['native']!,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
                       ),
                       value: language['code']!,
                       groupValue: selectedLanguage,
