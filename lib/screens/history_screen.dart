@@ -23,13 +23,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Future<void> _loadScanHistory() async {
     try {
+      print('Loading scan history...');
       final user = FirebaseService.getCurrentUser();
+      print('Current user: ${user?.uid}');
       if (user != null) {
         final history = await FirebaseService.getScanHistory(user.uid);
+        print('Scan history: ${history.length} items');
         setState(() {
           _scanHistory = history;
           _isLoading = false;
         });
+      } else {
+        print('No current user');
+        setState(() => _isLoading = false);
       }
     } catch (e) {
       print('Error loading scan history: $e');

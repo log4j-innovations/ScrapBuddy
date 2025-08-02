@@ -33,18 +33,27 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
+      print('Starting authentication process...');
+      print('Email: ${_emailController.text.trim()}');
+      print('Is Sign Up: $_isSignUp');
+      
       if (_isSignUp) {
+        print('Creating new user account...');
         final userCredential = await FirebaseService.signUpWithEmail(
           _emailController.text.trim(),
           _passwordController.text,
         );
         
+        print('User created: ${userCredential.user?.uid}');
+        
         // For new users, create profile with initial values
         if (userCredential.user != null) {
+          print('Creating user profile...');
           await FirebaseService.createUserProfile(
             userCredential.user!.uid,
             _emailController.text.trim(),
           );
+          print('User profile created successfully');
           
           // Navigate to language selection for new users
           if (mounted) {
@@ -62,19 +71,23 @@ class _LoginScreenState extends State<LoginScreen> {
           }
         }
       } else {
+        print('Signing in existing user...');
         await FirebaseService.signInWithEmail(
           _emailController.text.trim(),
           _passwordController.text,
         );
+        print('User signed in successfully');
       }
 
       if (mounted) {
+        print('Navigating to main navigation screen...');
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
         );
       }
     } catch (e) {
+      print('Authentication error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

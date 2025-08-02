@@ -4,7 +4,7 @@ import '../localization/app_localizations.dart';
 import '../services/firebase_service.dart';
 import 'language_selection_screen.dart';
 import 'main_navigation_screen.dart';
-import 'login_screen.dart';
+import 'auth/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   final Function(Locale)? onLocaleChanged;

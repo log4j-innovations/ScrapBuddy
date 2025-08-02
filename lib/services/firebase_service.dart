@@ -11,7 +11,14 @@ class FirebaseService {
 
   // Initialize Firebase
   static Future<void> initializeFirebase() async {
-    await Firebase.initializeApp();
+    try {
+      print('Initializing Firebase...');
+      await Firebase.initializeApp();
+      print('Firebase initialized successfully');
+    } catch (e) {
+      print('Error initializing Firebase: $e');
+      rethrow;
+    }
   }
 
   // Enable offline persistence
@@ -25,7 +32,9 @@ class FirebaseService {
 
   // Check if user is logged in
   static bool isUserLoggedIn() {
-    return _auth.currentUser != null;
+    final user = _auth.currentUser;
+    print('Checking if user is logged in: ${user?.uid}');
+    return user != null;
   }
 
   // Get current user
@@ -36,10 +45,13 @@ class FirebaseService {
   // Sign in with email and password
   static Future<UserCredential> signInWithEmail(String email, String password) async {
     try {
-      return await _auth.signInWithEmailAndPassword(
+      print('Attempting to sign in with email: $email');
+      final result = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+      print('Sign in successful: ${result.user?.uid}');
+      return result;
     } catch (e) {
       print('Error signing in with email: $e');
       rethrow;
@@ -49,10 +61,13 @@ class FirebaseService {
   // Sign up with email and password
   static Future<UserCredential> signUpWithEmail(String email, String password) async {
     try {
-      return await _auth.createUserWithEmailAndPassword(
+      print('Attempting to sign up with email: $email');
+      final result = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+      print('Sign up successful: ${result.user?.uid}');
+      return result;
     } catch (e) {
       print('Error signing up with email: $e');
       rethrow;
@@ -126,8 +141,12 @@ class FirebaseService {
   // Get user profile
   static Future<Map<String, dynamic>?> getUserProfile(String userId) async {
     try {
+      print('Getting user profile for: $userId');
       final doc = await _firestore.collection('users').doc(userId).get();
-      return doc.data();
+      print('Document exists: ${doc.exists}');
+      final data = doc.data();
+      print('User profile data: $data');
+      return data;
     } catch (e) {
       print('Error getting user profile: $e');
       rethrow;
@@ -154,12 +173,16 @@ class FirebaseService {
   // Get scan history
   static Future<List<Map<String, dynamic>>> getScanHistory(String userId) async {
     try {
+      print('Getting scan history for: $userId');
       final querySnapshot = await _firestore.collection('users').doc(userId)
           .collection('scans')
           .orderBy('timestamp', descending: true)
           .get();
 
-      return querySnapshot.docs.map((doc) => doc.data()).toList();
+      print('Found ${querySnapshot.docs.length} scan records');
+      final history = querySnapshot.docs.map((doc) => doc.data()).toList();
+      print('Scan history: $history');
+      return history;
     } catch (e) {
       print('Error getting scan history: $e');
       rethrow;

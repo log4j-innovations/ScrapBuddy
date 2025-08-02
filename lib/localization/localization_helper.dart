@@ -8,7 +8,10 @@ class LocalizationHelper {
       try {
         final localizations = AppLocalizations.current;
         if (localizations != null) {
-          return localizations.translate(key);
+          final translated = localizations.translate(key);
+          if (translated != key) {
+            return translated;
+          }
         }
       } catch (e) {
         print('Localization error for key $key: $e');

@@ -26,16 +26,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadUserData() async {
     try {
+      print('Loading user data...');
       final user = FirebaseService.getCurrentUser();
+      print('Current user: ${user?.uid}');
       if (user != null) {
         final userData = await FirebaseService.getUserProfile(user.uid);
+        print('User data: $userData');
         if (userData != null) {
           setState(() {
             _userData = UserModel.fromMap(userData, user.uid);
             _selectedLanguage = _userData!.language;
             _isLoading = false;
           });
+        } else {
+          print('No user data found');
+          setState(() => _isLoading = false);
         }
+      } else {
+        print('No current user');
+        setState(() => _isLoading = false);
       }
     } catch (e) {
       print('Error loading user data: $e');
