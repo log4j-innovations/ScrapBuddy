@@ -173,6 +173,7 @@ flutter build ios --release
 | **Windows** | ✅ Beta | Desktop support |
 | **macOS** | ✅ Beta | Desktop support |
 | **Linux** | ✅ Beta | Desktop support |
+<div align="center"> <img src="Img/screen1.png" alt="Home Screen" width="250" style="border: 1px solid #ccc; margin: 10px; border-radius: 8px;"> <img src="Img/screen2.png" alt="Classification Screen" width="250" style="border: 1px solid #ccc; margin: 10px; border-radius: 8px;"> <img src="Img/screen3.png" alt="Voice Assistant" width="250" style="border: 1px solid #ccc; margin: 10px; border-radius: 8px;"> <img src="Img/screen4.png" alt="Rewards" width="250" style="border: 1px solid #ccc; margin: 10px; border-radius: 8px;"> <img src="Img/screen5.png" alt="Scan History" width="250" style="border: 1px solid #ccc; margin: 10px; border-radius: 8px;"> </div>
 
 ## 🤝 Contributing
 
