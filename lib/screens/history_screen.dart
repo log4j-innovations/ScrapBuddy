@@ -211,7 +211,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               children: [
                 Expanded(
                   child: _buildStatItem(
-                    'Points',
+                    LocalizationHelper.getString(context, 'points', fallback: 'Points'),
                     points.toString(),
                     Icons.stars,
                     Colors.amber,
@@ -220,7 +220,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: _buildStatItem(
-                    'CO₂ Saved',
+                    LocalizationHelper.getString(context, 'co2_saved', fallback: 'CO₂ Saved'),
                     '${co2Saved.toStringAsFixed(2)} kg',
                     Icons.eco,
                     Colors.green,
@@ -310,7 +310,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: const Text('Scan History'),
+        title: Text(LocalizationHelper.getString(context, 'scan_history', fallback: 'Scan History')),
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -322,7 +322,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : _scanHistory.isEmpty
               ? Center(
                   child: Column(
@@ -335,14 +335,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'No scan history yet',
+                        LocalizationHelper.getString(context, 'no_scan_history', fallback: 'No scan history yet'),
                         style: AppTheme.headingStyle.copyWith(
                           color: Colors.grey.shade600,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Start scanning waste to see your history here',
+                        LocalizationHelper.getString(context, 'start_scanning_message', fallback: 'Start scanning waste to see your history here'),
                         style: AppTheme.subheadingStyle.copyWith(
                           color: Colors.grey.shade500,
                         ),

@@ -107,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -116,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   SizedBox(height: 16),
                   Text(
-                    'Analyzing waste...',
+                    LocalizationHelper.getString(context, 'analyzing_waste', fallback: 'Analyzing waste...'),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

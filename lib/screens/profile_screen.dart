@@ -5,6 +5,8 @@ import '../services/firebase_service.dart';
 import '../models/user_model.dart';
 import '../localization/localization_helper.dart';
 import 'auth/login_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'main_navigation_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -56,17 +58,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final user = FirebaseService.getCurrentUser();
       if (user != null) {
+        // Update Firebase
         await FirebaseService.updateUserProfile(user.uid, {'language': language});
+        
+        // Update SharedPreferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('selected_language', language);
+        
         setState(() => _selectedLanguage = language);
         
-        // Update localization
-        // You might want to trigger a rebuild of the app here
+        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Language updated to ${_getLanguageName(language)}'),
             backgroundColor: Colors.green,
           ),
         );
+        
+        // Trigger app rebuild with new locale
+        if (mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MainNavigationScreen(),
+            ),
+            (route) => false,
+          );
+        }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -223,7 +241,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             
                             // Member Since
                             Text(
-                              'Member since ${_userData!.createdAt?.year ?? DateTime.now().year}',
+                              '${LocalizationHelper.getString(context, 'member_since', fallback: 'Member since')} ${_userData!.createdAt?.year ?? DateTime.now().year}',
                               style: TextStyle(
                                 color: Colors.grey.shade500,
                                 fontSize: 14,
@@ -237,7 +255,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       
                       // Stats Grid
                       Text(
-                        'Your Impact',
+                        LocalizationHelper.getString(context, 'your_impact', fallback: 'Your Impact'),
                         style: AppTheme.headingStyle.copyWith(fontSize: 20),
                       ),
                       const SizedBox(height: 16),
@@ -251,25 +269,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         childAspectRatio: 1.2,
                         children: [
                           _buildStatCard(
-                            'Total Scans',
+                            LocalizationHelper.getString(context, 'total_scans', fallback: 'Total Scans'),
                             _userData!.totalScans.toString(),
                             Icons.camera_alt,
                             AppTheme.primaryColor,
                           ),
                           _buildStatCard(
-                            'Points Earned',
+                            LocalizationHelper.getString(context, 'points_earned', fallback: 'Points Earned'),
                             _userData!.rewardPoints.toString(),
                             Icons.stars,
                             Colors.amber,
                           ),
                           _buildStatCard(
-                            'CO₂ Saved (kg)',
+                            LocalizationHelper.getString(context, 'co2_saved_kg', fallback: 'CO₂ Saved (kg)'),
                             _userData!.co2Saved.toStringAsFixed(1),
                             Icons.eco,
                             Colors.green,
                           ),
                           _buildStatCard(
-                            'Hazardous Waste',
+                            LocalizationHelper.getString(context, 'hazardous_waste', fallback: 'Hazardous Waste'),
                             _userData!.hazardousWasteHandled.toString(),
                             Icons.warning,
                             Colors.orange,
@@ -299,7 +317,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Streaks & Achievements',
+                              LocalizationHelper.getString(context, 'streaks_achievements', fallback: 'Streaks & Achievements'),
                               style: AppTheme.headingStyle.copyWith(fontSize: 18),
                             ),
                             const SizedBox(height: 16),
@@ -308,7 +326,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               children: [
                                 Expanded(
                                   child: _buildStatCard(
-                                    'Daily Streak',
+                                    LocalizationHelper.getString(context, 'daily_streak', fallback: 'Daily Streak'),
                                     _userData!.dailyStreak.toString(),
                                     Icons.local_fire_department,
                                     Colors.red,
@@ -317,7 +335,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: _buildStatCard(
-                                    'Consecutive Scans',
+                                    LocalizationHelper.getString(context, 'consecutive_correct', fallback: 'Consecutive Scans'),
                                     _userData!.consecutiveCorrectScans.toString(),
                                     Icons.trending_up,
                                     Colors.blue,
@@ -333,7 +351,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       
                       // Settings Section
                       Text(
-                        'Settings',
+                        LocalizationHelper.getString(context, 'settings', fallback: 'Settings'),
                         style: AppTheme.headingStyle.copyWith(fontSize: 20),
                       ),
                       const SizedBox(height: 16),
@@ -358,7 +376,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Language',
+                              LocalizationHelper.getString(context, 'language', fallback: 'Language'),
                               style: AppTheme.headingStyle.copyWith(fontSize: 16),
                             ),
                             const SizedBox(height: 12),
@@ -366,7 +384,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             DropdownButtonFormField<String>(
                               value: _selectedLanguage,
                               decoration: AppTheme.inputDecoration.copyWith(
-                                labelText: 'Select Language',
+                                labelText: LocalizationHelper.getString(context, 'select_language', fallback: 'Select Language'),
                               ),
                               items: [
                                 DropdownMenuItem(value: 'en', child: Text('English')),
@@ -398,12 +416,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text(
-                            'Sign Out',
-                            style: TextStyle(
+                          child: Text(
+                            LocalizationHelper.getString(context, 'sign_out', fallback: 'Sign Out'),
+                            style: const TextStyle(
+                              color: Colors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white,
                             ),
                           ),
                         ),

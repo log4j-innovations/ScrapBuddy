@@ -26,27 +26,27 @@ Future<void> main() async {
 }
 
 class ScrapBuddyApp extends StatefulWidget {
-  const ScrapBuddyApp({Key? key}) : super(key: key);
+  const ScrapBuddyApp({super.key});
 
   @override
-  _ScrapBuddyAppState createState() => _ScrapBuddyAppState();
+  State<ScrapBuddyApp> createState() => _ScrapBuddyAppState();
 }
 
 class _ScrapBuddyAppState extends State<ScrapBuddyApp> {
-  Locale? _locale;
+  Locale _locale = const Locale('en', '');
 
   @override
   void initState() {
     super.initState();
-    _loadLocale();
+    _loadSavedLanguage();
   }
 
-  Future<void> _loadLocale() async {
+  Future<void> _loadSavedLanguage() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? selectedLanguage = prefs.getString('selected_language');
-    if (selectedLanguage != null) {
+    String? savedLanguage = prefs.getString('selected_language');
+    if (savedLanguage != null) {
       setState(() {
-        _locale = Locale(selectedLanguage);
+        _locale = Locale(savedLanguage);
       });
     }
   }

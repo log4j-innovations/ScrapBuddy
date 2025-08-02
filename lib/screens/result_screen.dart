@@ -258,7 +258,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
             ),
             const SizedBox(width: 12),
             Text(
-              'Saving your scan results...',
+              LocalizationHelper.getString(context, 'saving_results', fallback: 'Saving your scan results...'),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -299,7 +299,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
               ),
               const SizedBox(width: 8),
               Text(
-                'Great job!',
+                LocalizationHelper.getString(context, 'great_job', fallback: 'Great job!'),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -313,7 +313,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
             children: [
               Expanded(
                 child: _buildFeedbackItem(
-                  'Points Earned',
+                  LocalizationHelper.getString(context, 'points_earned_label', fallback: 'Points Earned'),
                   '+$_pointsEarned',
                   Icons.stars,
                   Colors.amber,
@@ -322,7 +322,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
               const SizedBox(width: 16),
               Expanded(
                 child: _buildFeedbackItem(
-                  'CO₂ Saved',
+                  LocalizationHelper.getString(context, 'co2_saved_label', fallback: 'CO₂ Saved'),
                   '${_co2Saved.toStringAsFixed(2)} kg',
                   Icons.eco,
                   Colors.lightGreen,
@@ -347,7 +347,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'You\'ve contributed to a cleaner environment! Keep up the great work.',
+                    LocalizationHelper.getString(context, 'environmental_contribution', fallback: 'You\'ve contributed to a cleaner environment! Keep up the great work.'),
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.white,
