@@ -49,3 +49,6 @@ flutter:
     - assets/tflite/
     - assets/tflite/model_unquant.tflite
     - assets/tflite/labels.txt
+    - assets/audio/hi/
+    - assets/audio/ta/
+    - assets/audio/te/

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import 'package:tflite_flutter/tflite_flutter.dart';
 import '../models/waste_classification.dart';
+import 'offline_resources.dart';
 
 class OfflineClassifierService {
   static Interpreter? _interpreter;
@@ -32,7 +33,7 @@ class OfflineClassifierService {
 
   static bool get isInitialized => _interpreter != null && _labels != null;
 
-  static Future<WasteClassification?> classifyImage(File imageFile) async {
+  static Future<WasteClassification?> classifyImage(File imageFile, String language) async {
     if (!isInitialized) {
       print('❌ Offline classifier not initialized');
       return null;
@@ -81,12 +82,18 @@ class OfflineClassifierService {
       final disposalInstructions = _getDisposalInstructions(predictedLabel);
       final monetaryValue = _getEstimatedValue(predictedLabel);
 
+      // Get translations from OfflineResources
+      final wasteType = predictedLabel.toLowerCase();
+      final wasteTypeTranslation = OfflineResources.wasteTypeTranslations[wasteType]?[language] ?? wasteType;
+      final disposalInstructionsTranslated = OfflineResources.disposalInstructions[wasteType]?[language] ?? disposalInstructions;
+      final recyclabilityTranslation = OfflineResources.recyclabilityTranslations[_getRecyclability(predictedLabel)]?[language] ?? _getRecyclability(predictedLabel);
+
       return WasteClassification(
-        wasteType: predictedLabel.toLowerCase(),
-        itemName: 'Detected ${predictedLabel.toLowerCase()} waste',
-        recyclability: _getRecyclability(predictedLabel),
+        wasteType: wasteType,
+        itemName: wasteTypeTranslation,
+        recyclability: recyclabilityTranslation,
         monetaryValue: monetaryValue,
-        disposalInstructions: disposalInstructions,
+        disposalInstructions: disposalInstructionsTranslated,
         confidence: maxScore,
       );
 

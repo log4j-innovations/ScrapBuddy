@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/waste_classification.dart';
 import '../config/api_config.dart';
 import 'offline_classifier_service.dart';
+import 'offline_resources.dart';
 
 class VertexAIService {
   // Restricted waste classes
@@ -108,12 +109,14 @@ IMPORTANT:
         }
       } on SocketException catch (_) {
         print('❌ No internet connection, falling back to offline classification');
-        return await OfflineClassifierService.classifyImage(imageFile);
+        final selectedLanguage = await _getSelectedLanguage();
+        return await OfflineClassifierService.classifyImage(imageFile, selectedLanguage);
       }
 
       if (!VertexAIConfig.validateApiKeys()) {
         print('❌ API keys not configured, falling back to offline classification');
-        return await OfflineClassifierService.classifyImage(imageFile);
+        final selectedLanguage = await _getSelectedLanguage();
+        return await OfflineClassifierService.classifyImage(imageFile, selectedLanguage);
       }
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -151,7 +154,8 @@ IMPORTANT:
 
       if (vertexResponse.statusCode != 200) {
         print('❌ Vertex AI API failed: ${vertexResponse.statusCode}, falling back to offline classification');
-        return await OfflineClassifierService.classifyImage(imageFile);
+        final selectedLanguage = await _getSelectedLanguage();
+        return await OfflineClassifierService.classifyImage(imageFile, selectedLanguage);
       }
 
       final vertexData = json.decode(vertexResponse.body);
@@ -314,8 +318,34 @@ IMPORTANT:
     return fallbackTranslations[language]?[text];
   }
 
+  Future<String> _getSelectedLanguage() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('selected_language') ?? 'hi';
+  }
+
   Future<String?> getTextToSpeechBase64(String text, String language) async {
     try {
+      // First try to get offline audio
+      try {
+        final offlineAudioPath = await OfflineResources.getOfflineAudioPath(text, language);
+        final audioFile = File(offlineAudioPath);
+        if (await audioFile.exists()) {
+          final bytes = await audioFile.readAsBytes();
+          return base64Encode(bytes);
+        }
+      } catch (e) {
+        print('Failed to get offline audio: $e');
+      }
+
+      // Check internet connectivity
+      try {
+        await InternetAddress.lookup('google.com');
+      } on SocketException catch (_) {
+        print('❌ No internet connection, cannot get TTS');
+        return null;
+      }
+
+      // Try online TTS
       final languageCode = _languageCodeMap[language] ?? 'hi-IN';
       print('Requesting TTS for language: $languageCode with text: $text');
       
