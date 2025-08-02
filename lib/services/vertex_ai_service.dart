@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
 import '../models/waste_classification.dart';
 import '../config/api_config.dart';
 import 'offline_classifier_service.dart';
@@ -328,10 +329,9 @@ IMPORTANT:
       // First try to get offline audio
       try {
         final offlineAudioPath = await OfflineResources.getOfflineAudioPath(text, language);
-        final audioFile = File(offlineAudioPath);
-        if (await audioFile.exists()) {
-          final bytes = await audioFile.readAsBytes();
-          return base64Encode(bytes);
+        if (offlineAudioPath != null) {
+          final audioBytes = await rootBundle.load(offlineAudioPath);
+          return base64Encode(audioBytes.buffer.asUint8List());
         }
       } catch (e) {
         print('Failed to get offline audio: $e');

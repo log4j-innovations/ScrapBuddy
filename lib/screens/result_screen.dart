@@ -127,7 +127,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2E7D32).withOpacity( 0.3),
+            color: const Color(0xFF2E7D32).withOpacity(0.3),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -139,7 +139,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
           const Icon(Icons.psychology, color: Colors.white, size: 16),
           const SizedBox(width: 8),
           Text(
-            '${LocalizationHelper.getString(context, 'classified_by_vertex_ai', fallback: 'Classified by Vertex AI')} • ${LocalizationHelper.getString(context, 'language', fallback: 'Language')}: ${_getLanguageName(selectedLanguage)}',
+            '${LocalizationHelper.getString(context, 'classified_by_scrapbuddy', fallback: 'Classified by ScrapBuddy')} • ${LocalizationHelper.getString(context, 'language', fallback: 'Language')}: ${_getLanguageName(selectedLanguage)}',
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -502,7 +502,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
 
   void _shareResult() {
     final String shareText = '''
-🤖 ScrapBuddy ${LocalizationHelper.getString(context, 'classification_result', fallback: 'Classification Results')} (Vertex AI Powered)
+🤖 ScrapBuddy ${LocalizationHelper.getString(context, 'classification_result', fallback: 'Classification Results')}
 
 📦 ${LocalizationHelper.getString(context, 'waste_type', fallback: 'Waste Type')}: ${widget.classification.wasteType}
 🏷️ ${LocalizationHelper.getString(context, 'item_name', fallback: 'Item')}: ${widget.classification.translatedName ?? widget.classification.itemName}
@@ -511,7 +511,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
 📋 ${LocalizationHelper.getString(context, 'disposal_instructions', fallback: 'Instructions')}: ${widget.classification.translatedInstructions ?? widget.classification.disposalInstructions}
 
 ${LocalizationHelper.getString(context, 'language', fallback: 'Language')}: ${_getLanguageName(selectedLanguage)}
-#ScrapBuddy #VertexAI #WasteManagement #Recycling
+#ScrapBuddy #WasteManagement #Recycling #SustainableLiving
     ''';
     
     _showSnackBar('${LocalizationHelper.getString(context, 'share_content', fallback: 'Share content')}: $shareText', const Color(0xFF2E7D32));

@@ -70,9 +70,31 @@ class OfflineResources {
     }
   };
 
-  static Future<String> getOfflineAudioPath(String text, String language) async {
-    // Return the path to the pre-recorded audio file based on waste type and language
-    final wasteType = text.toLowerCase();
-    return 'assets/audio/$language/${wasteType}_instructions.mp3';
+  static Future<String?> getOfflineAudioPath(String text, String language) async {
+    try {
+      // First, try to find a matching waste type
+      String? wasteType;
+      for (var type in wasteTypeTranslations.keys) {
+        if (text.toLowerCase().contains(type) || 
+            text.toLowerCase().contains(wasteTypeTranslations[type]?[language]?.toLowerCase() ?? '')) {
+          wasteType = type;
+          break;
+        }
+      }
+
+      if (wasteType != null) {
+        return 'assets/audio/$language/${wasteType}_instructions.mp3';
+      }
+
+      // If no waste type found, try to find a matching instruction
+      for (var type in disposalInstructions.keys) {
+        if (text == disposalInstructions[type]?[language]) {
+          return 'assets/audio/$language/${type}_instructions.mp3';
+        }
+      }
+    } catch (e) {
+      print('Error getting offline audio path: $e');
+    }
+    return null;
   }
 }
