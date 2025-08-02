@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'dart:async';
+import '../services/offline_classifier_service.dart';
 import '../services/vertex_ai_service.dart';
 import '../widgets/stats_card.dart';
 import '../localization/localization_helper.dart';
@@ -14,6 +16,47 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool _isOnline = true;
+  Timer? _connectivityTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeOfflineClassifier();
+    _startConnectivityCheck();
+  }
+
+  @override
+  void dispose() {
+    _connectivityTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _initializeOfflineClassifier() async {
+    await OfflineClassifierService.initialize();
+  }
+
+  void _startConnectivityCheck() {
+    _checkConnectivity();
+    _connectivityTimer = Timer.periodic(const Duration(seconds: 5), (_) => _checkConnectivity());
+  }
+
+  Future<void> _checkConnectivity() async {
+    try {
+      final result = await InternetAddress.lookup('google.com');
+      if (mounted) {
+        setState(() {
+          _isOnline = result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+        });
+      }
+    } on SocketException catch (_) {
+      if (mounted) {
+        setState(() {
+          _isOnline = false;
+        });
+      }
+    }
+  }
   final ImagePicker _picker = ImagePicker();
   final VertexAIService _vertexAIService = VertexAIService();
   bool _isLoading = false;
@@ -27,6 +70,42 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          Container(
+            margin: const EdgeInsets.all(8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: _isOnline ? const Color(0xFF2E7D32).withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: _isOnline ? const Color(0xFF2E7D32).withOpacity(0.3) : Colors.grey.withOpacity(0.3),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  _isOnline ? Icons.cloud_done : Icons.cloud_off,
+                  size: 16,
+                  color: _isOnline ? const Color(0xFF2E7D32) : Colors.grey,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _isOnline ? 'Online' : 'Offline',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: _isOnline ? const Color(0xFF2E7D32) : Colors.grey,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         bottom: false,
         child: _isLoading ? _buildLoadingView() : _buildMainView(),

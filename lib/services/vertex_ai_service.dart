@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/waste_classification.dart';
 import '../config/api_config.dart';
+import 'offline_classifier_service.dart';
 
 class VertexAIService {
   // Restricted waste classes
@@ -99,8 +100,20 @@ IMPORTANT:
 
   Future<WasteClassification?> classifyWaste(File imageFile) async {
     try {
+      // Check internet connectivity
+      try {
+        final result = await InternetAddress.lookup('google.com');
+        if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+          print('✅ Internet connection available');
+        }
+      } on SocketException catch (_) {
+        print('❌ No internet connection, falling back to offline classification');
+        return await OfflineClassifierService.classifyImage(imageFile);
+      }
+
       if (!VertexAIConfig.validateApiKeys()) {
-        throw Exception('API keys not configured. Please check secrets.xml file.');
+        print('❌ API keys not configured, falling back to offline classification');
+        return await OfflineClassifierService.classifyImage(imageFile);
       }
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -137,7 +150,8 @@ IMPORTANT:
       );
 
       if (vertexResponse.statusCode != 200) {
-        throw Exception('Vertex AI API failed: ${vertexResponse.statusCode}');
+        print('❌ Vertex AI API failed: ${vertexResponse.statusCode}, falling back to offline classification');
+        return await OfflineClassifierService.classifyImage(imageFile);
       }
 
       final vertexData = json.decode(vertexResponse.body);

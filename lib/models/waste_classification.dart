@@ -5,7 +5,8 @@ class WasteClassification {
   final int monetaryValue;
   final String disposalInstructions;
   final String? translatedName;
-  final String? translatedInstructions; // Added this field
+  final String? translatedInstructions;
+  final double? confidence; // Added this field
 
   WasteClassification({
     required this.wasteType,
@@ -14,7 +15,8 @@ class WasteClassification {
     required this.monetaryValue,
     required this.disposalInstructions,
     this.translatedName,
-    this.translatedInstructions, // Added this parameter
+    this.translatedInstructions,
+    this.confidence, // Added this parameter
   });
 
   factory WasteClassification.fromJson(Map<String, dynamic> json) {

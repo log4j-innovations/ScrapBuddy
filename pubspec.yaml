@@ -27,6 +27,10 @@ dependencies:
   google_fonts: ^5.1.0
   flutter_svg: ^2.0.7
   
+  # Offline classification
+  tflite_flutter: ^0.10.3
+  image: ^4.1.7
+  
   # Icons
   cupertino_icons: ^1.0.2
 
@@ -42,3 +46,6 @@ flutter:
     - lib/localization/
     - assets/images/
     - assets/icons/
+    - assets/tflite/
+    - assets/tflite/model_unquant.tflite
+    - assets/tflite/labels.txt

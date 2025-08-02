@@ -9,7 +9,7 @@
     <application
         android:label="ScrapBuddy"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/app_logo"
         android:enableOnBackInvokedCallback="true">
         
         <activity
