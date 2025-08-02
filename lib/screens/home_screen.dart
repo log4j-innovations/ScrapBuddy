@@ -57,10 +57,10 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
   }
+  
   final ImagePicker _picker = ImagePicker();
   final VertexAIService _vertexAIService = VertexAIService();
   bool _isLoading = false;
-  int _currentIndex = 0;
   
   int todaysPoints = 25;
   int recyclableItemsScanned = 12;
@@ -98,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(
                     fontSize: 12,
                     color: _isOnline ? const Color(0xFF2E7D32) : Colors.grey,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -106,495 +106,200 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: SafeArea(
-        bottom: false,
-        child: _isLoading ? _buildLoadingView() : _buildMainView(),
-      ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
-      floatingActionButton: _isLoading ? null : _buildFloatingActionButton(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-    );
-  }
-
-  Widget _buildBottomNavigationBar() {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 8,
-            offset: Offset(0, -2),
-          ),
-        ],
-      ),
-      child: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 4.0,
-        color: Colors.white,
-        elevation: 0,
-        height: 70,
-        child: Container(
-          height: 70,
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).padding.bottom,
-            left: 12,
-            right: 12,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(
-                Icons.home_outlined, 
-                Icons.home, 
-                LocalizationHelper.getString(context, 'home', fallback: 'Home'), 
-                0
+      body: _isLoading
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2E7D32)),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Analyzing waste...',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 48), // Space for FAB
-              _buildNavItem(
-                Icons.history_outlined, 
-                Icons.history, 
-                LocalizationHelper.getString(context, 'history', fallback: 'History'), 
-                2
-              ),
-              _buildNavItem(
-                Icons.person_outline, 
-                Icons.person, 
-                LocalizationHelper.getString(context, 'profile', fallback: 'Profile'), 
-                3
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData outlinedIcon, IconData filledIcon, String label, int index) {
-    final bool isSelected = _currentIndex == index;
-    return Expanded(
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            _currentIndex = index;
-          });
-          _handleNavigation(index, label);
-        },
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                isSelected ? filledIcon : outlinedIcon,
-                color: isSelected ? const Color(0xFF2E7D32) : Colors.grey.shade500,
-                size: 22,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: isSelected ? const Color(0xFF2E7D32) : Colors.grey.shade500,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _handleNavigation(int index, String label) {
-    switch (index) {
-      case 0:
-        break;
-      case 2:
-        _showSnackBar(LocalizationHelper.getString(context, 'feature_coming_soon', 
-            fallback: '$label feature coming soon!'));
-        break;
-      case 3:
-        _showSnackBar(LocalizationHelper.getString(context, 'feature_coming_soon', 
-            fallback: '$label feature coming soon!'));
-        break;
-    }
-  }
-
-  Widget _buildFloatingActionButton() {
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2E7D32).withOpacity( 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: FloatingActionButton(
-        onPressed: () => _showImageSourceDialog(),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        heroTag: "scan_fab",
-        child: const Icon(
-          Icons.qr_code_scanner,
-          color: Colors.white,
-          size: 26,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoadingView() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(
-            width: 80,
-            height: 80,
-            child: CircularProgressIndicator(
-              color: Color(0xFF2E7D32),
-              strokeWidth: 3,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            LocalizationHelper.getString(context, 'analyzing_with_ai', 
-                fallback: 'Analyzing with Vertex AI...'),
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF2E7D32),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            LocalizationHelper.getString(context, 'please_wait', 
-                fallback: 'Please wait while we classify your waste'),
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMainView() {
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            child: Padding(
+            )
+          : SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildHeader(),
+                  _buildWelcomeSection(),
                   const SizedBox(height: 32),
-                  _buildScanWasteCard(),
+                  _buildStatsSection(),
                   const SizedBox(height: 32),
-                  _buildQuickInfoSection(),
-                  const SizedBox(height: 20), // Reduced padding for bottom nav
+                  _buildScanSection(),
                 ],
               ),
             ),
-          ),
-        ),
-      ],
     );
   }
 
-  Widget _buildHeader() {
-    return Row(
-      children: [
-        const CircleAvatar(
-          radius: 24,
-          backgroundColor: Color(0xFF2E7D32),
-          child: Icon(Icons.person, color: Colors.white, size: 24),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                LocalizationHelper.getString(context, 'app_name', fallback: 'ScrapBuddy'),
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              Text(
-                LocalizationHelper.getString(context, 'ai_powered_subtitle', 
-                    fallback: 'AI-Powered by Vertex AI'),
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ),
-        ),
-        IconButton(
-          onPressed: () {
-            _showSnackBar(LocalizationHelper.getString(context, 'notifications_coming_soon', 
-                fallback: 'Notifications feature coming soon!'));
-          },
-          icon: const Icon(Icons.notifications_outlined, size: 24),
-          style: IconButton.styleFrom(
-            backgroundColor: Colors.white,
-            padding: const EdgeInsets.all(12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildScanWasteCard() {
-    return GestureDetector(
-      onTap: () => _showImageSourceDialog(),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFFB5B5), Color(0xFFFFCCCC)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFFFB5B5).withOpacity( 0.3),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Camera Icon (same as before)
-            Container(
-              width: 140,
-              height: 90,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity( 0.9),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade300, width: 2),
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: 80,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey.shade400),
-                    ),
-                  ),
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.grey.shade400, width: 2),
-                    ),
-                    child: Center(
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade600,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 15,
-                    child: Container(
-                      width: 20,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              LocalizationHelper.getString(context, 'scan_waste', fallback: 'Scan Waste'),
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              LocalizationHelper.getString(context, 'identify_materials', 
-                  fallback: 'Identify material types and get disposal\ninstructions'),
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade700,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Container(
-              width: double.infinity,
-              height: 48,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity( 0.2),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withOpacity( 0.3)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.upload, color: Colors.black54, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    LocalizationHelper.getString(context, 'upload_image', fallback: 'Upload Image'),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black54,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickInfoSection() {
+  Widget _buildWelcomeSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          LocalizationHelper.getString(context, 'quick_info', fallback: 'Quick Info'),
+          LocalizationHelper.getString(context, 'welcome_message', fallback: 'Welcome to ScrapBuddy'),
           style: const TextStyle(
-            fontSize: 22,
+            fontSize: 28,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 8),
+        Text(
+          LocalizationHelper.getString(context, 'scan_waste_message', 
+              fallback: 'Scan any waste item to get instant classification and recycling guidance'),
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey.shade600,
+            height: 1.5,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          LocalizationHelper.getString(context, 'today_stats', fallback: 'Today\'s Stats'),
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
               child: StatsCard(
-                title: LocalizationHelper.getString(context, 'todays_points', fallback: "Today's Points"),
+                title: LocalizationHelper.getString(context, 'points_earned', fallback: 'Points Earned'),
                 value: todaysPoints.toString(),
-                color: const Color(0xFF2E7D32),
+                icon: Icons.stars,
+                color: const Color(0xFFFF9800),
               ),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: StatsCard(
-                title: LocalizationHelper.getString(context, 'recyclable_items', 
-                    fallback: "Recyclable\nItems Scanned"),
+                title: LocalizationHelper.getString(context, 'items_scanned', fallback: 'Items Scanned'),
                 value: recyclableItemsScanned.toString(),
-                color: const Color(0xFF1976D2),
+                icon: Icons.camera_alt,
+                color: const Color(0xFF2196F3),
               ),
             ),
           ],
         ),
         const SizedBox(height: 16),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity( 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                LocalizationHelper.getString(context, 'environmental_impact', 
-                    fallback: 'Environmental Impact'),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.eco,
-                    color: Color(0xFF4CAF50),
-                    size: 28,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    '$environmentalImpact ${LocalizationHelper.getString(context, 'kg_co2_saved', fallback: 'kg CO2 saved')}',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF4CAF50),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+        StatsCard(
+          title: LocalizationHelper.getString(context, 'environmental_impact', fallback: 'Environmental Impact'),
+          value: environmentalImpact,
+          icon: Icons.eco,
+          color: const Color(0xFF4CAF50),
         ),
       ],
     );
   }
 
-  void _showImageSourceDialog() {
+  Widget _buildScanSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          LocalizationHelper.getString(context, 'scan_waste', fallback: 'Scan Waste'),
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildImageSourceModal(),
+      ],
+    );
+  }
+
+  Widget _buildImageSourceModal() {
+    return Builder(
+      builder: (context) {
+        return GestureDetector(
+          onTap: _showImageSourceModal,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2E7D32).withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                const Icon(Icons.camera_alt, size: 48, color: Colors.white),
+                const SizedBox(height: 12),
+                Text(
+                  LocalizationHelper.getString(context, 'tap_to_scan', fallback: 'Tap to Scan Waste'),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  LocalizationHelper.getString(context, 'scan_description', 
+                      fallback: 'Get instant classification and recycling guidance'),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showImageSourceModal() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
+      backgroundColor: Colors.transparent,
+      builder: (context) => _buildImageSourceBottomSheet(),
+    );
+  }
+
+  Widget _buildImageSourceBottomSheet() {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) {
-        return Container(
+      child: SafeArea(
+        child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -609,8 +314,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                LocalizationHelper.getString(context, 'select_image_source', 
-                    fallback: 'Select Image Source'),
+                LocalizationHelper.getString(context, 'choose_image_source', fallback: 'Choose Image Source'),
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -629,9 +333,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 20),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2E7D32).withOpacity( 0.1),
+                          color: const Color(0xFF2E7D32).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFF2E7D32).withOpacity( 0.3)),
+                          border: Border.all(color: const Color(0xFF2E7D32).withOpacity(0.3)),
                         ),
                         child: Column(
                           children: [
@@ -660,9 +364,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 20),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1976D2).withOpacity( 0.1),
+                          color: const Color(0xFF1976D2).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFF1976D2).withOpacity( 0.3)),
+                          border: Border.all(color: const Color(0xFF1976D2).withOpacity(0.3)),
                         ),
                         child: Column(
                           children: [
@@ -686,8 +390,8 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 24),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 

@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../localization/app_localizations.dart';
 import '../services/firebase_service.dart';
 import 'language_selection_screen.dart';
-import 'home_screen.dart';
+import 'main_navigation_screen.dart';
 import 'login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -65,7 +65,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => isLoggedIn ? const HomeScreen() : const LoginScreen(),
+            builder: (context) => isLoggedIn ? const MainNavigationScreen() : const LoginScreen(),
           ),
         );
       }

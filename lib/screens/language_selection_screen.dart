@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../localization/localization_helper.dart';
-import 'home_screen.dart';
+import '../services/firebase_service.dart';
+import 'main_navigation_screen.dart';
 
 class LanguageSelectionScreen extends StatefulWidget {
   final Function(Locale)? onLocaleChanged;
@@ -144,8 +145,18 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
     if (!mounted) return; // Check if widget is still mounted
     
     try {
+      // Save to SharedPreferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('selected_language', selectedLanguage!);
+      
+      // Save to Firebase for the current user
+      final user = FirebaseService.getCurrentUser();
+      if (user != null) {
+        await FirebaseService.updateUserProfile(user.uid, {
+          'language': selectedLanguage!,
+          'updatedAt': DateTime.now(),
+        });
+      }
       
       // Update app locale
       if (widget.onLocaleChanged != null) {
@@ -156,7 +167,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
       
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
       );
     } catch (e) {
       // Using debugPrint instead of print for better practice

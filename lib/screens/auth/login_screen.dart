@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../config/app_theme.dart';
 import '../../services/firebase_service.dart';
-import '../home_screen.dart';
+import '../main_navigation_screen.dart';
+import '../language_selection_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -33,10 +34,33 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       if (_isSignUp) {
-        await FirebaseService.signUpWithEmail(
+        final userCredential = await FirebaseService.signUpWithEmail(
           _emailController.text.trim(),
           _passwordController.text,
         );
+        
+        // For new users, create profile with initial values
+        if (userCredential.user != null) {
+          await FirebaseService.createUserProfile(
+            userCredential.user!.uid,
+            _emailController.text.trim(),
+          );
+          
+          // Navigate to language selection for new users
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => LanguageSelectionScreen(
+                  onLocaleChanged: (locale) {
+                    // Language will be saved in the selection screen
+                  },
+                ),
+              ),
+            );
+            return;
+          }
+        }
       } else {
         await FirebaseService.signInWithEmail(
           _emailController.text.trim(),
@@ -47,34 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString().replaceAll('firebase_auth/', '')),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _handleGoogleSignIn() async {
-    setState(() => _isLoading = true);
-
-    try {
-      final userCredential = await FirebaseService.signInWithGoogle();
-      
-      if (userCredential != null && mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
         );
       }
     } catch (e) {
@@ -105,32 +102,91 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 40),
-                // Logo and App Name
-                Column(
+                
+                // Logo and App Name with Test Credentials
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.recycling,
-                        size: 64,
-                        color: AppTheme.primaryColor,
+                    // Logo
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Image.asset(
+                          'assets/icons/app_logo.png',
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'ScrapBuddy',
-                      style: AppTheme.headingStyle,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'AI-Powered Waste Classification',
-                      style: AppTheme.subheadingStyle,
+                    const SizedBox(width: 24),
+                    
+                    // Test Credentials
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text(
+                                'Test Credentials:',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                'test@email.com',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              Text(
+                                '123456',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // App Name
+                Text(
+                  'ScrapBuddy',
+                  style: AppTheme.headingStyle,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'AI-Powered Waste Classification',
+                  style: AppTheme.subheadingStyle,
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 48),
 
@@ -219,34 +275,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         : 'Don\'t have an account? Sign Up',
                     style: TextStyle(color: AppTheme.primaryColor),
                   ),
-                ),
-                const SizedBox(height: 24),
-
-                // Divider
-                Row(
-                  children: [
-                    Expanded(child: Divider(color: Colors.grey.shade300)),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'OR',
-                        style: TextStyle(color: Colors.grey.shade600),
-                      ),
-                    ),
-                    Expanded(child: Divider(color: Colors.grey.shade300)),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Google Sign In Button
-                OutlinedButton.icon(
-                  onPressed: _isLoading ? null : _handleGoogleSignIn,
-                  style: AppTheme.outlinedButtonStyle,
-                  icon: Image.asset(
-                    'assets/icons/google_logo.png',
-                    height: 24,
-                  ),
-                  label: const Text('Continue with Google'),
                 ),
               ],
             ),

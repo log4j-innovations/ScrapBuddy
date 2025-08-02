@@ -59,6 +59,30 @@ class FirebaseService {
     }
   }
 
+  // Create user profile with initial values
+  static Future<void> createUserProfile(String userId, String email) async {
+    try {
+      await _firestore.collection('users').doc(userId).set({
+        'email': email,
+        'name': null,
+        'photoUrl': null,
+        'totalScans': 0,
+        'co2Saved': 0.0,
+        'rewardPoints': 0,
+        'hazardousWasteHandled': 0,
+        'lastScanDate': null,
+        'language': 'en', // Default language
+        'dailyStreak': 0,
+        'consecutiveCorrectScans': 0,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print('Error creating user profile: $e');
+      rethrow;
+    }
+  }
+
   // Sign in with Google
   static Future<UserCredential?> signInWithGoogle() async {
     try {
@@ -153,15 +177,53 @@ class FirebaseService {
         if (!userDoc.exists) {
           transaction.set(userRef, {
             'totalScans': 1,
-            'co2Saved': _calculateCO2Savings(scanData),
+            'co2Saved': _calculateCO2Saved(scanData),
             'rewardPoints': _calculateRewardPoints(scanData),
+            'hazardousWasteHandled': _isHazardousWaste(scanData) ? 1 : 0,
+            'lastScanDate': FieldValue.serverTimestamp(),
+            'dailyStreak': 1,
+            'consecutiveCorrectScans': 1,
           });
         } else {
           final currentData = userDoc.data()!;
+          final co2Saved = _calculateCO2Saved(scanData);
+          final rewardPoints = _calculateRewardPoints(scanData);
+          final isHazardous = _isHazardousWaste(scanData);
+          
+          // Calculate daily streak
+          final lastScanDate = currentData['lastScanDate'] as Timestamp?;
+          final today = DateTime.now();
+          final yesterday = today.subtract(const Duration(days: 1));
+          int dailyStreak = currentData['dailyStreak'] ?? 0;
+          
+          if (lastScanDate != null) {
+            final lastScan = lastScanDate.toDate();
+            if (lastScan.year == yesterday.year && 
+                lastScan.month == yesterday.month && 
+                lastScan.day == yesterday.day) {
+              dailyStreak++;
+            } else if (lastScan.year != today.year || 
+                      lastScan.month != today.month || 
+                      lastScan.day != today.day) {
+              dailyStreak = 1;
+            }
+          } else {
+            dailyStreak = 1;
+          }
+          
+          // Calculate consecutive correct scans
+          int consecutiveCorrectScans = currentData['consecutiveCorrectScans'] ?? 0;
+          consecutiveCorrectScans++;
+          
           transaction.update(userRef, {
             'totalScans': (currentData['totalScans'] ?? 0) + 1,
-            'co2Saved': (currentData['co2Saved'] ?? 0) + _calculateCO2Savings(scanData),
-            'rewardPoints': (currentData['rewardPoints'] ?? 0) + _calculateRewardPoints(scanData),
+            'co2Saved': (currentData['co2Saved'] ?? 0.0) + co2Saved,
+            'rewardPoints': (currentData['rewardPoints'] ?? 0) + rewardPoints,
+            'hazardousWasteHandled': (currentData['hazardousWasteHandled'] ?? 0) + (isHazardous ? 1 : 0),
+            'lastScanDate': FieldValue.serverTimestamp(),
+            'dailyStreak': dailyStreak,
+            'consecutiveCorrectScans': consecutiveCorrectScans,
+            'updatedAt': FieldValue.serverTimestamp(),
           });
         }
       });
@@ -171,17 +233,26 @@ class FirebaseService {
     }
   }
 
+  // Check if waste is hazardous
+  static bool _isHazardousWaste(Map<String, dynamic> scanData) {
+    final wasteType = scanData['wasteType'].toString().toUpperCase();
+    return ['BATTERIES', 'E-WASTE', 'LIGHT BULBS'].contains(wasteType);
+  }
+
   // Calculate CO2 savings based on waste type and weight
-  static double _calculateCO2Savings(Map<String, dynamic> scanData) {
-    // CO2 savings in kg per kg of recycled material
-    const Map<String, double> co2SavingsPerKg = {
-      'plastic': 2.5,
+  static double _calculateCO2Saved(Map<String, dynamic> scanData) {
+    final co2SavingsPerKg = {
+      'plastic': 2.0,
+      'metal': 5.0,
       'paper': 1.5,
-      'metal': 4.0,
+      'e-waste': 0.4,
       'glass': 0.3,
+      'batteries': 0.0, // Hazardous, no direct CO2 saving per kg, but diverted
+      'light bulbs': 0.0, // Hazardous, no direct CO2 saving per kg, but diverted
+      'organic': 0.0, // Composting benefits, but not direct CO2 saving from recycling
+      'clothes': 0.0, // Reuse benefits, but not direct CO2 saving from recycling
       'cardboard': 1.2,
     };
-
     final wasteType = scanData['wasteType'].toString().toLowerCase();
     final weight = scanData['weight'] ?? 0.1; // Default to 0.1 kg if not specified
 
@@ -190,25 +261,43 @@ class FirebaseService {
 
   // Calculate reward points based on waste type and recyclability
   static int _calculateRewardPoints(Map<String, dynamic> scanData) {
-    // Base points for different waste types
-    const Map<String, int> basePoints = {
-      'plastic': 10,
-      'paper': 5,
-      'metal': 15,
-      'glass': 8,
-      'cardboard': 5,
+    // Tier-based points for different waste types
+    final basePoints = {
+      'organic': 2,
+      'paper': 2,
+      'plastic': 2,
+      'clothes': 3,
+      'glass': 3,
+      'metal': 4,
+      'light bulbs': 6,
+      'batteries': 8,
+      'e-waste': 8,
+      'cardboard': 2,
     };
 
     final wasteType = scanData['wasteType'].toString().toLowerCase();
-    final isRecyclable = scanData['recyclability'].toString().toLowerCase() == 'recyclable';
-
-    // Get base points for the waste type
     int points = basePoints[wasteType] ?? 0;
 
-    // Bonus points for recyclable items
-    if (isRecyclable) {
-      points *= 2;
-    }
+    // Bonus points for daily streak (every 5 days)
+    final userRef = _firestore.collection('users').doc(_auth.currentUser?.uid);
+    userRef.get().then((doc) {
+      if (doc.exists) {
+        final dailyStreak = doc.data()?['dailyStreak'] ?? 0;
+        if (dailyStreak % 5 == 0 && dailyStreak > 0) {
+          points += 5; // Daily streak bonus
+        }
+      }
+    });
+
+    // Bonus points for consecutive correct scans (every 5 scans)
+    userRef.get().then((doc) {
+      if (doc.exists) {
+        final consecutiveScans = doc.data()?['consecutiveCorrectScans'] ?? 0;
+        if (consecutiveScans % 5 == 0 && consecutiveScans > 0) {
+          points += 3; // Consecutive correct scans bonus
+        }
+      }
+    });
 
     return points;
   }

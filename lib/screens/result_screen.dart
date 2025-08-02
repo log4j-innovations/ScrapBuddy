@@ -7,6 +7,7 @@ import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 import '../models/waste_classification.dart';
 import '../services/vertex_ai_service.dart';
+import '../services/firebase_service.dart';
 import '../localization/localization_helper.dart';
 
 class ResultScreen extends StatefulWidget {
@@ -31,6 +32,9 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   String selectedLanguage = 'en';
+  bool _isSavingToFirebase = false;
+  int _pointsEarned = 0;
+  double _co2Saved = 0.0;
 
   @override
   void initState() {
@@ -44,6 +48,7 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
       CurvedAnimation(parent: _animationController, curve: Curves.easeIn)
     );
     _animationController.forward();
+    _calculateAndSaveResults();
   }
 
   Future<void> _loadLanguage() async {
@@ -52,6 +57,71 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
       selectedLanguage = prefs.getString('selected_language') ?? 'en';
     });
     print('Loaded selected language: $selectedLanguage');
+  }
+
+  Future<void> _calculateAndSaveResults() async {
+    setState(() => _isSavingToFirebase = true);
+    
+    try {
+      // Calculate points and CO2 saved
+      final wasteType = widget.classification.wasteType.toLowerCase();
+      
+      // Calculate points based on waste type
+      final basePoints = {
+        'organic': 2,
+        'paper': 2,
+        'plastic': 2,
+        'clothes': 3,
+        'glass': 3,
+        'metal': 4,
+        'light bulbs': 6,
+        'batteries': 8,
+        'e-waste': 8,
+        'cardboard': 2,
+      };
+      
+      _pointsEarned = basePoints[wasteType] ?? 0;
+      
+      // Calculate CO2 saved
+      final co2SavingsPerKg = {
+        'plastic': 2.0,
+        'metal': 5.0,
+        'paper': 1.5,
+        'e-waste': 0.4,
+        'glass': 0.3,
+        'batteries': 0.0,
+        'light bulbs': 0.0,
+        'organic': 0.0,
+        'clothes': 0.0,
+        'cardboard': 1.2,
+      };
+      
+      final weight = 0.1; // Default weight in kg
+      _co2Saved = (co2SavingsPerKg[wasteType] ?? 0.0) * weight;
+      
+      // Save to Firebase
+      final user = FirebaseService.getCurrentUser();
+      if (user != null) {
+        await FirebaseService.saveScanHistory(user.uid, {
+          'wasteType': widget.classification.wasteType,
+          'itemName': widget.classification.itemName,
+          'translatedName': widget.classification.translatedName,
+          'recyclability': widget.classification.recyclability,
+          'monetaryValue': widget.classification.monetaryValue,
+          'disposalInstructions': widget.classification.disposalInstructions,
+          'confidence': widget.classification.confidence,
+          'points': _pointsEarned,
+          'co2Saved': _co2Saved,
+          'weight': weight,
+          'imagePath': widget.imageFile.path,
+        });
+      }
+      
+      setState(() => _isSavingToFirebase = false);
+    } catch (e) {
+      print('Error saving scan results: $e');
+      setState(() => _isSavingToFirebase = false);
+    }
   }
 
   @override
@@ -80,6 +150,8 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
               _buildImageSection(),
               const SizedBox(height: 24),
               _buildVertexAIBadge(),
+              const SizedBox(height: 24),
+              _buildFeedbackSection(),
               const SizedBox(height: 24),
               _buildClassificationResults(),
               const SizedBox(height: 32),
@@ -163,6 +235,166 @@ class _ResultScreenState extends State<ResultScreen> with SingleTickerProviderSt
       'en': 'English',
     };
     return languageNames[code] ?? 'English';
+  }
+
+  Widget _buildFeedbackSection() {
+    if (_isSavingToFirebase) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.blue.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.blue.withOpacity(0.3)),
+        ),
+        child: Row(
+          children: [
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Saving your scan results...',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.blue.shade700,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF4CAF50).withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.celebration,
+                color: Colors.white,
+                size: 24,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Great job!',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildFeedbackItem(
+                  'Points Earned',
+                  '+$_pointsEarned',
+                  Icons.stars,
+                  Colors.amber,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildFeedbackItem(
+                  'CO₂ Saved',
+                  '${_co2Saved.toStringAsFixed(2)} kg',
+                  Icons.eco,
+                  Colors.lightGreen,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'You\'ve contributed to a cleaner environment! Keep up the great work.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeedbackItem(String label, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.white.withOpacity(0.9),
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildClassificationResults() {

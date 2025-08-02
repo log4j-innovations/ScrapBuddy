@@ -4,12 +4,14 @@ class StatsCard extends StatelessWidget {
   final String title;
   final String value;
   final Color color;
+  final IconData? icon;
 
   const StatsCard({
     Key? key,
     required this.title,
     required this.value,
     required this.color,
+    this.icon,
   }) : super(key: key);
 
   @override
@@ -30,6 +32,14 @@ class StatsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (icon != null) ...[
+            Icon(
+              icon,
+              color: color,
+              size: 24,
+            ),
+            const SizedBox(height: 8),
+          ],
           Text(
             title,
             style: TextStyle(
