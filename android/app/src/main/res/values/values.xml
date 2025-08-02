@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="default_web_client_id" translatable="false">758746086302-qqvvqvqvqvqvqvqvqvqvqvqvqvqvqvqv.apps.googleusercontent.com</string>
+    <string name="gcm_defaultSenderId" translatable="false">758746086302</string>
+    <string name="google_api_key" translatable="false">AIzaSyAI0m8erz3unU7RS7SqD7vCwE23SmOcVu0</string>
+    <string name="google_app_id" translatable="false">1:758746086302:android:531d4e938abc7dfcea748f</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyAI0m8erz3unU7RS7SqD7vCwE23SmOcVu0</string>
+    <string name="google_storage_bucket" translatable="false">scrapbuddy-45ba9.firebasestorage.app</string>
+    <string name="project_id" translatable="false">scrapbuddy-45ba9</string>
+</resources>

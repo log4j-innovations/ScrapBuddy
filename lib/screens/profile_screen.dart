@@ -1,90 +1,184 @@
 import 'package:flutter/material.dart';
+import '../config/app_theme.dart';
+import '../services/firebase_service.dart';
+import '../models/user_model.dart';
+import 'auth/login_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({Key? key}) : super(key: key);
+
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(0xFFF8F9FA),
-      appBar: AppBar(
-        title: Text('Profile'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(24),
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundColor: Color(0xFF2E7D32),
-              child: Icon(Icons.person, color: Colors.white, size: 50),
-            ),
-            SizedBox(height: 16),
-            Text(
-              'ScrapBuddy User',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Eco Warrior',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
-            ),
-            SizedBox(height: 32),
-            _buildProfileItem(Icons.eco, 'Total CO2 Saved', '25 kg'),
-            _buildProfileItem(Icons.recycling, 'Items Recycled', '48'),
-            _buildProfileItem(Icons.star, 'Points Earned', '120'),
-            _buildProfileItem(Icons.language, 'Language', 'Hindi'),
-          ],
-        ),
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  UserModel? _user;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    try {
+      final currentUser = FirebaseService.getCurrentUser();
+      if (currentUser != null) {
+        final userData = await FirebaseService.getUserProfile(currentUser.uid);
+        if (userData != null) {
+          setState(() {
+            _user = UserModel.fromMap(userData, currentUser.uid);
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error loading user profile: $e');
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleLogout() async {
+    try {
+      await FirebaseService.signOut();
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error signing out: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildStatCard(String title, String value, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: AppTheme.cardDecoration,
+      child: Column(
+        children: [
+          Icon(icon, color: AppTheme.primaryColor, size: 32),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: AppTheme.headingStyle.copyWith(fontSize: 20),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: AppTheme.subheadingStyle.copyWith(fontSize: 14),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildProfileItem(IconData icon, String title, String value) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 16),
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: Offset(0, 2),
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
+      appBar: AppBar(
+        title: const Text('Profile'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _handleLogout,
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Icon(icon, color: Color(0xFF2E7D32), size: 24),
-          SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Profile Header
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: AppTheme.cardDecoration,
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                    child: Text(
+                      _user?.name?.substring(0, 1).toUpperCase() ?? 
+                      _user?.email.substring(0, 1).toUpperCase() ?? 'U',
+                      style: AppTheme.headingStyle.copyWith(
+                        color: AppTheme.primaryColor,
+                        fontSize: 32,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    _user?.name ?? 'User',
+                    style: AppTheme.headingStyle,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _user?.email ?? '',
+                    style: AppTheme.subheadingStyle,
+                  ),
+                ],
               ),
             ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2E7D32),
+            const SizedBox(height: 24),
+
+            // Stats Grid
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              children: [
+                _buildStatCard(
+                  'Total Scans',
+                  _user?.totalScans.toString() ?? '0',
+                  Icons.document_scanner,
+                ),
+                _buildStatCard(
+                  'CO₂ Saved',
+                  '${_user?.co2Saved.toStringAsFixed(1) ?? '0'} kg',
+                  Icons.eco,
+                ),
+                _buildStatCard(
+                  'Reward Points',
+                  _user?.rewardPoints.toString() ?? '0',
+                  Icons.stars,
+                ),
+                _buildStatCard(
+                  'Last Scan',
+                  _user?.lastScanDate?.toString().split(' ')[0] ?? 'Never',
+                  Icons.calendar_today,
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 24),
+
+            // Logout Button
+            ElevatedButton.icon(
+              onPressed: _handleLogout,
+              style: AppTheme.buttonStyle,
+              icon: const Icon(Icons.logout),
+              label: const Text('Logout'),
+            ),
+          ],
+        ),
       ),
     );
   }

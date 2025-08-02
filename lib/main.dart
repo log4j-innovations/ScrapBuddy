@@ -3,17 +3,26 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'screens/splash_screen.dart';
 import 'localization/app_localizations.dart';
 import 'config/api_keys_helper.dart';
+import 'services/firebase_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Initialize Firebase
+  await Firebase.initializeApp();
+  await FirebaseService.initializeFirebase();
+  
+  // Enable offline persistence
+  await FirebaseService.enableOfflinePersistence();
+  
   // Load API keys from Android secrets.xml
   await ApiKeysHelper.loadApiKeys();
   
-  runApp(ScrapBuddyApp());
+  runApp(const ScrapBuddyApp());
 }
 
 class ScrapBuddyApp extends StatefulWidget {

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../localization/app_localizations.dart';
+import '../services/firebase_service.dart';
 import 'language_selection_screen.dart';
 import 'home_screen.dart';
+import 'login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   final Function(Locale)? onLocaleChanged;
@@ -42,6 +44,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? selectedLanguage = prefs.getString('selected_language');
+      bool isLoggedIn = FirebaseService.isUserLoggedIn();
       
       if (!mounted) return;
       
@@ -53,14 +56,17 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           ),
         );
       } else {
-        // Set locale before navigating to home
+        // Set locale before navigating
         if (widget.onLocaleChanged != null) {
           widget.onLocaleChanged!(Locale(selectedLanguage));
         }
         
+        // Navigate based on authentication status
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          MaterialPageRoute(
+            builder: (context) => isLoggedIn ? const HomeScreen() : const LoginScreen(),
+          ),
         );
       }
     } catch (e) {
