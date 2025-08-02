@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class UserModel {
   final String id;
   final String email;
@@ -45,13 +47,13 @@ class UserModel {
       dailyStreak: data['dailyStreak'] ?? 0,
       consecutiveCorrectScans: data['consecutiveCorrectScans'] ?? 0,
       lastScanDate: data['lastScanDate'] != null 
-          ? (data['lastScanDate'] as DateTime) 
+          ? (data['lastScanDate'] as Timestamp).toDate() 
           : null,
       createdAt: data['createdAt'] != null 
-          ? (data['createdAt'] as DateTime) 
+          ? (data['createdAt'] as Timestamp).toDate() 
           : null,
       updatedAt: data['updatedAt'] != null 
-          ? (data['updatedAt'] as DateTime) 
+          ? (data['updatedAt'] as Timestamp).toDate() 
           : null,
     );
   }
